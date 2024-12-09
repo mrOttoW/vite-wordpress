@@ -8,4 +8,5 @@ export const DEFAULT_OPTIONS = {
   alias: {},
   globals: {},
   manifest: false,
+  target: 'es2017',
 };
