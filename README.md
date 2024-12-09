@@ -115,3 +115,47 @@ export default {
   ],
 };
 ```
+
+## Asset File & Cache busting 
+
+Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
+
+Example project structure:
+
+```
+project-root/
+├── src/
+│    ├─ custom-slider.pcss (imported into index.js)
+│    └─ custom-slider.js
+├── build/
+│    ├─ custom-slider.css
+│    ├─ custom-slider.js
+│    └─ custom-slider.asset.php
+...
+```
+
+Example of registering and enqueueing the asset file based on the given example.
+
+```php
+
+  $asset_file = require get_stylesheet_directory() . 'build/custom-slider.asset.php';
+  
+  wp_register_script(
+    'my-custom-slider',
+    get_stylesheet_directory_uri() . 'build/custom-slider.js',
+    $asset_file['dependencies'],
+    $asset_file['version'],
+  );
+  
+  foreach ( $asset_file['assets'] as $css_handle => $css_path ) {
+    wp_register_style(
+      $css_handle,
+      get_stylesheet_directory_uri() . "build/{$css_path}",
+      [],
+      $asset_file['version']
+    );
+  }
+  
+  wp_enqueue_script('my-custom-slider')
+
+```

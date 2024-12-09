@@ -53,6 +53,9 @@
   "peerDependencies": {
     "vite": ">=6"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "vite",
     "vite wordpress",
@@ -70,9 +73,6 @@
   },
   "bugs": {
     "url": "https://github.com/mrOttoW/vite-wordpress/issues"
-  },
-  "engines": {
-    "node": ">=18"
   },
   "homepage": "https://github.com/mrOttoW/vite-wordpress#readme",
   "author": "mrOttoW",
