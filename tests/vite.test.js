@@ -15,11 +15,11 @@ describe('Test expected generated build files & contents', () => {
   });
 
   it('imported wp block packages should be transformed into globals', () => {
-    const blockScript  = path.join(buildDir,  'blocks', 'example-block', 'index.js');
+    const blockScript = path.join(buildDir, 'blocks', 'example-block', 'index.js');
 
     expect(fs.existsSync(blockScript)).toBe(true);
 
-    const jsContent  = fs.readFileSync(blockScript, 'utf-8');
+    const jsContent = fs.readFileSync(blockScript, 'utf-8');
 
     expect(jsContent).not.toContain('@wordpress/blocks');
     expect(jsContent).not.toContain('@wordpress/i18n');
@@ -27,16 +27,15 @@ describe('Test expected generated build files & contents', () => {
   });
 
   it('should generate the expected async output without commonJS dependency', () => {
-    const mainScript  = path.join(buildDir,  'main.js');
+    const mainScript = path.join(buildDir, 'main.js');
 
     expect(fs.existsSync(mainScript)).toBe(true);
 
-    const jsContent  = fs.readFileSync(mainScript, 'utf-8');
+    const jsContent = fs.readFileSync(mainScript, 'utf-8');
 
     expect(jsContent).not.toContain('__commonJS');
     expect(jsContent).not.toContain('__require');
   });
-
 
   afterAll(() => {
     // Clean up the build directory
