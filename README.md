@@ -1,6 +1,18 @@
-# Vite 6+ Config for traditional WordPress development
-
+<div align="center">
+  <a href="https://vitejs.dev/">
+    <img width="200" height="200" hspace="10" src="vite-logo.svg" alt="vite logo" />
+  </a>
+  <h1>⚡️Vite 6+ Config for traditional WordPress development</h1>
+  <p>
 Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development.
+</p>
+  <img src="https://img.shields.io/github/v/release/mrOttoW/vite-wordpress" alt="GitHub release" />
+  <img src="https://img.shields.io/npm/dependency-version/vite-wordpress/peer/vite" alt="npm peer dependency version" />
+  <img alt="Node Current" src="https://img.shields.io/node/v/vite-wordpress">
+  <img src="https://img.shields.io/github/last-commit/mrOttoW/vite-wordpress" alt="GitHub last commit"/>
+  <img src="https://img.shields.io/npm/l/vite-wordpress" alt="licence" />
+</div>
+
 
 ## Features
 

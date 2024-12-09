@@ -95,7 +95,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           minify: mode === 'development' ? false : 'esbuild',
           sourcemap: mode === 'development' || command === 'serve' ? 'inline' : false,
           assetsInlineLimit: 0, //Make sure to not include inline assets in CSS.
-          assetsDir: '', // In WordPress, the src directory is primarily used for resources, so an additional assets directory is unnecessary.
+          assetsDir: '', // In traditional WP, the src directory is primarily used for resources, so assets directory is unnecessary.
           rollupOptions,
         };
         const preConfig: UserConfig = {
