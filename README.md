@@ -49,17 +49,17 @@ export default {
 
 The plugin supports the following options:
 
-| Option     | Type                                     | Default   | Description                                                                                                        |
-| ---------- | ---------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
-| `outDir`   | `string`                                 | `'build'` | Directory for output files.                                                                                        |
-| `srcDir`   | `string`                                 | `'src'`   | Directory for source files.                                                                                        |
-| `input`    | `string[]`                               | `[]`      | List of input files relative to `srcDir` with glob possibilties.                                                   |
-| `manifest` | `boolean \| string`                      | `false`   | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files). |
-| `globals`  | `object`                                 | `{}`      | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).       |
-| `alias`    | `object`                                 | `{}`      | Define path aliases.                                                                                               |
-| `target`   | `string \| string[] \| false` | `es2017`  | Esbuild target.                                                                                                    |
-| `banner`   | `string \| function`                     | `''`      | Banner to prepend to output files.                                                                                 |
-| `footer`   | `string \| function`                     | `''`      | Footer to append to output files.                                                                                  |
+| Option     | Type                            | Default   | Description                                                                                                           |
+| ---------- |---------------------------------| --------- |-----------------------------------------------------------------------------------------------------------------------|
+| `outDir`   | `string`                        | `'build'` | Directory for output files.                                                                                           |
+| `srcDir`   | `string`                        | `'src'`   | Directory for source files.                                                                                           |
+| `input`    | `string[]`                      | `[]`      | List of input files relative to `srcDir` with glob options.                                                           |
+| `manifest` | `boolean \| string`             | `false`   | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files).  |
+| `globals`  | `object`                        | `{}`      | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).          |
+| `alias`    | `object`                        | `{}`      | Define path aliases.                                                                                                  |
+| `target`   | `string \| string[] \| false`   | `es2017`  | Esbuild target.                                                                                                       |
+| `banner`   | `string \| function`            | `''`      | Banner to prepend to output files.                                                                                    |
+| `footer`   | `string \| function`            | `''`      | Footer to append to output files.                                                                                     |
 
 ## Example Project Structure
 
