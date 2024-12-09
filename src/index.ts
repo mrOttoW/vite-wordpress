@@ -25,6 +25,7 @@ interface Options {
   footer?: string | AddonFunction;
   globals?: GlobalsOption;
   alias?: AliasOptions;
+  target?: 'modules' | string | string[] | false;
 }
 
 function ViteWordPress(optionsParam: Options = {}): Plugin {
@@ -88,7 +89,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const build: BuildOptions = {
           outDir: options.outDir,
           manifest: options.manifest,
-          target: 'es2017',
+          target: options.target,
           minify: mode === 'development' ? false : 'esbuild',
           sourcemap: mode === 'development' || command === 'serve' ? 'inline' : false,
           assetsInlineLimit: 0, //Make sure to not include inline assets in CSS.
