@@ -41,8 +41,6 @@ export default {
     ViteWordPress({
       input: [
         'main.js',
-        'other-js-entries/*.js',
-        'css-entries/*.pcss', // when not being imported in js files
       ],
     }),
   ],
