@@ -111,18 +111,13 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
         userConfig = deepmerge(preConfig, userConfig);
 
-        const rollupPlugins = [
-          externalGlobals(globals)
-        ];
+        const rollupPlugins = [externalGlobals(globals)];
 
         // Ensures globals are NOT using "import" in the compiled files but are defined externally.
         if (Array.isArray(userConfig.build?.rollupOptions?.plugins)) {
-          userConfig.build.rollupOptions.plugins = [
-            ...userConfig.build.rollupOptions.plugins,
-            ...rollupPlugins
-          ]
+          userConfig.build.rollupOptions.plugins = [...userConfig.build.rollupOptions.plugins, ...rollupPlugins];
         } else {
-          userConfig.build.rollupOptions.plugins = rollupPlugins
+          userConfig.build.rollupOptions.plugins = rollupPlugins;
         }
 
         return userConfig;
