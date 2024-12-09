@@ -58,9 +58,9 @@ The plugin supports the following options:
 | `input`    | `string[]`                    | `[]`   | List of input files relative to `srcDir` with glob options.                                                                                            |
 | `manifest` | `boolean \| string`           | `false` | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files).                                   |
 | `globals`  | `object`                      | `{}`   | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).                                           |
+| `base`     | `string`                      | `''`      | Sets base public path for generating URLs for assets in CSS/JS. It will be appended to the outDir if set (e.g., /wp-content/themes/my-theme/{outDir}). |
 | `alias`    | `object`                      | `{}`   | Define path aliases.                                                                                                                                   |
 | `target`   | `string \| string[] \| false` | `es2017` | Esbuild target.                                                                                                                                        |
-| `base`     | `string`                      | `''`      | Sets base public path for generating URLs for assets in CSS/JS. It will be appended to the outDir if set (e.g., /wp-content/themes/my-theme/{outDir}). |
 | `banner`   | `string \| function`          | `''`   | Banner to prepend to output JS files.                                                                                                                  |
 | `footer`   | `string \| function`          | `''`   | Footer to append to output JS files.                                                                                                                   |
 
