@@ -19,6 +19,7 @@ import externalGlobals from 'rollup-plugin-external-globals';
 interface Options {
   outDir?: string;
   srcDir?: string;
+  base?: string;
   input?: string[];
   manifest?: boolean | string;
   banner?: string | AddonFunction;
@@ -44,6 +45,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
         const rootPath: string = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
+        const base: string = options.base !== '' ? path.join(options.base, options.outDir) : '';
         const globals: GlobalsOption = {
           ...PluginGlobals,
           ...options.globals,
@@ -76,8 +78,8 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           plugins: [],
         };
         const esbuild: ESBuildOptions = {
-          loader: 'jsx', // Allow React code within .js files instead of .jsx.
-          include: /.*\.jsx?$/,
+          loader: 'jsx',
+          include: /.*\.jsx?$/, // Allow React code within .js files instead of .jsx.
           exclude: [],
         };
         const optimizeDeps: DepOptimizationConfig = {
@@ -98,6 +100,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         };
         const preConfig: UserConfig = {
           assetsInclude: ['**/*.php'], // Allow PHP files as entries.
+          base,
           optimizeDeps,
           esbuild,
           build,
@@ -108,10 +111,20 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
         userConfig = deepmerge(preConfig, userConfig);
 
+        const rollupPlugins = [
+          externalGlobals(globals)
+        ];
+
+        // Ensures globals are NOT using "import" in the compiled files but are defined externally.
         if (Array.isArray(userConfig.build?.rollupOptions?.plugins)) {
-          // Ensures globals are NOT using "import" in the compiled files but are defined externally.
-          userConfig.build.rollupOptions.plugins.push(externalGlobals(globals));
+          userConfig.build.rollupOptions.plugins = [
+            ...userConfig.build.rollupOptions.plugins,
+            ...rollupPlugins
+          ]
+        } else {
+          userConfig.build.rollupOptions.plugins = rollupPlugins
         }
+
         return userConfig;
       })(),
 
