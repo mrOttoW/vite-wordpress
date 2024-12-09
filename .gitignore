@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+coverage/
+*.log
+.phpunit.result.cache
+yarn.lock
+npm.lock
+tests/build/
