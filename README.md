@@ -13,6 +13,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 - Automatically reloads PHP files during development.
 - Preserved folder structure in the output directory.
 - Use vite `development` mode to compile unminified with sourcemaps (sourcemaps are also included during `serve` command)
+- All configurations can be overridden using Vite's default configuration options.
 
 ## Installation
 
@@ -50,17 +51,18 @@ export default {
 
 The plugin supports the following options:
 
-| Option     | Type                          | Default   | Description                                                                                                          |
-| ---------- | ----------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
-| `outDir`   | `string`                      | `'build'` | Directory for output files.                                                                                          |
-| `srcDir`   | `string`                      | `'src'`   | Directory for source files.                                                                                          |
-| `input`    | `string[]`                    | `[]`      | List of input files relative to `srcDir` with glob options.                                                          |
-| `manifest` | `boolean \| string`           | `false`   | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files). |
-| `globals`  | `object`                      | `{}`      | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).         |
-| `alias`    | `object`                      | `{}`      | Define path aliases.                                                                                                 |
-| `target`   | `string \| string[] \| false` | `es2017`  | Esbuild target.                                                                                                      |
-| `banner`   | `string \| function`          | `''`      | Banner to prepend to output files.                                                                                   |
-| `footer`   | `string \| function`          | `''`      | Footer to append to output files.                                                                                    |
+| Option     | Type                          | Default | Description                                                                                                                                            |
+|------------|-------------------------------| ------ |--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `outDir`   | `string`                      | `'build'` | Directory for output files.                                                                                                                            |
+| `srcDir`   | `string`                      | `'src'` | Directory for source files.                                                                                                                            |
+| `input`    | `string[]`                    | `[]`   | List of input files relative to `srcDir` with glob options.                                                                                            |
+| `manifest` | `boolean \| string`           | `false` | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files).                                   |
+| `globals`  | `object`                      | `{}`   | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).                                           |
+| `alias`    | `object`                      | `{}`   | Define path aliases.                                                                                                                                   |
+| `target`   | `string \| string[] \| false` | `es2017` | Esbuild target.                                                                                                                                        |
+| `base`     | `string`                      | `''`      | Sets base public path for generating URLs for assets in CSS/JS. It will be appended to the outDir if set (e.g., /wp-content/themes/my-theme/{outDir}). |
+| `banner`   | `string \| function`          | `''`   | Banner to prepend to output JS files.                                                                                                                  |
+| `footer`   | `string \| function`          | `''`   | Footer to append to output JS files.                                                                                                                   |
 
 ## Example Project Structure
 

@@ -4,5 +4,6 @@ export const config = {
 };
 
 export const pluginOptions = {
+  base: '/wp-content/themes/my-theme',
   input: ['main.js', 'blocks/example-block/index.js', 'css/*.pcss'],
 };
