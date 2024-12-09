@@ -1,6 +1,6 @@
 # Vite 6+ Config for traditional WordPress development
 
-Providing an optimized, opinionated & "Go To" configuration for building WordPress blocks & traditional WordPress development.
+Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development.
 
 ## Features
 
