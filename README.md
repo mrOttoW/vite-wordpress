@@ -12,6 +12,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 - JSX/React code supported in `.js` files instead of using `.jsx`.
 - Automatically reloads PHP files during development.
 - Preserved folder structure in the output directory.
+- Use vite `development` mode to compile unminified with sourcemaps (sourcemaps are also included during `serve` command)
 
 ## Installation
 
