@@ -39,9 +39,7 @@ import { ViteWordPress } from 'vite-wordpress';
 export default {
   plugins: [
     ViteWordPress({
-      input: [
-        'main.js',
-      ],
+      input: ['main.js'],
     }),
   ],
 };
