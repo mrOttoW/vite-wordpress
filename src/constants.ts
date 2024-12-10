@@ -10,4 +10,5 @@ export const DEFAULT_OPTIONS = {
   globals: {},
   manifest: false,
   target: 'es2017',
+  preserveDirs: true,
 };

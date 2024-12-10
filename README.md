@@ -1,8 +1,8 @@
 <div align="center">
   <a href="https://vitejs.dev/">
-    <img width="200" height="200" hspace="10" src="vite-logo.svg" alt="vite logo" />
+    <img width="200" height="200" hspace="10" src="https://raw.githubusercontent.com/mrOttoW/vite-wordpress/ef6f4b84aa9da549e9908d8c21513d53dfe020bc/vite-logo.svg" alt="vite logo" />
   </a>
-  <h1>⚡️Vite 6+ Config for traditional WordPress development</h1>
+  <h1>⚡️Vite 6 Config for Traditional WordPress Development</h1>
   <p>
 Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development.
 </p>
@@ -12,7 +12,6 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
   <img src="https://img.shields.io/github/last-commit/mrOttoW/vite-wordpress" alt="GitHub last commit"/>
   <img src="https://img.shields.io/npm/l/vite-wordpress" alt="licence" />
 </div>
-
 
 ## Features
 
@@ -63,18 +62,19 @@ export default {
 
 The plugin supports the following options:
 
-| Option     | Type                          | Default   | Description                                                                                                                                            |
-| ---------- | ----------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `outDir`   | `string`                      | `'build'` | Directory for output files.                                                                                                                            |
-| `srcDir`   | `string`                      | `'src'`   | Directory for source files.                                                                                                                            |
-| `input`    | `string[]`                    | `[]`      | List of input files relative to `srcDir` with glob options.                                                                                            |
-| `manifest` | `boolean \| string`           | `false`   | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files).                                   |
-| `globals`  | `object`                      | `{}`      | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).                                           |
-| `base`     | `string`                      | `''`      | Sets base public path for generating URLs for assets in CSS/JS. It will be appended to the outDir if set (e.g., /wp-content/themes/my-theme/{outDir}). |
-| `alias`    | `object`                      | `{}`      | Define path aliases.                                                                                                                                   |
-| `target`   | `string \| string[] \| false` | `es2017`  | Esbuild target.                                                                                                                                        |
-| `banner`   | `string \| function`          | `''`      | Banner to prepend to output JS files.                                                                                                                  |
-| `footer`   | `string \| function`          | `''`      | Footer to append to output JS files.                                                                                                                   |
+| Option            | Type                          | Default   | Description                                                                                                                                            |
+|-------------------|-------------------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `outDir`          | `string`                      | `'build'` | Directory for output files.                                                                                                                            |
+| `srcDir`          | `string`                      | `'src'`   | Directory for source files.                                                                                                                            |
+| `input`           | `string[]`                    | `[]`      | List of input files relative to `srcDir` with glob options.                                                                                            |
+| `preserveDirs`    | `boolean`                     | `true`    | Preserve folder structure in the output. If `false`, all files are flattened into a single directory.                                                  |
+| `manifest`        | `boolean \| string`           | `false`   | Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add hash to all compiled files).                                   |
+| `globals`         | `object`                      | `{}`      | Maps module names to global variables to mark them as external dependencies (in addition to preset globals).                                           |
+| `base`            | `string`                      | `''`      | Sets base public path for generating URLs for assets in CSS/JS. It will be appended to the outDir if set (e.g., /wp-content/themes/my-theme/{outDir}). |
+| `alias`           | `object`                      | `{}`      | Define path aliases.                                                                                                                                   |
+| `target`          | `string \| string[] \| false` | `es2017`  | Esbuild target.                                                                                                                                        |
+| `banner`          | `string \| function`          | `''`      | Banner to prepend to output JS files.                                                                                                                  |
+| `footer`          | `string \| function`          | `''`      | Footer to append to output JS files.                                                                                                                   |
 
 ## Example Project Structure
 
@@ -116,7 +116,7 @@ export default {
 };
 ```
 
-## Asset File & Cache busting 
+## Asset File & Cache busting
 
 Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
 
@@ -125,7 +125,7 @@ Example project structure:
 ```
 project-root/
 ├── src/
-│    ├─ custom-slider.pcss (imported into index.js)
+│    ├─ custom-slider.pcss (imported into custom-slider.js)
 │    └─ custom-slider.js
 ├── build/
 │    ├─ custom-slider.css
@@ -134,19 +134,19 @@ project-root/
 ...
 ```
 
-Example of registering and enqueueing the asset file based on the given example.
+Example of registering and enqueueing the asset file based on the given example within a theme.
 
 ```php
 
   $asset_file = require get_stylesheet_directory() . 'build/custom-slider.asset.php';
-  
+
   wp_register_script(
     'my-custom-slider',
     get_stylesheet_directory_uri() . 'build/custom-slider.js',
     $asset_file['dependencies'],
     $asset_file['version'],
   );
-  
+
   foreach ( $asset_file['assets'] as $css_handle => $css_path ) {
     wp_register_style(
       $css_handle,
@@ -155,7 +155,7 @@ Example of registering and enqueueing the asset file based on the given example.
       $asset_file['version']
     );
   }
-  
+
   wp_enqueue_script('my-custom-slider')
 
 ```

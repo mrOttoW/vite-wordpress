@@ -27,10 +27,44 @@ interface Options {
   globals?: GlobalsOption;
   alias?: AliasOptions;
   target?: 'modules' | string | string[] | false;
+  preserveDirs?: boolean;
 }
 
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
+
+  /**
+   * Get input.
+   *
+   * @param rootPath
+   */
+  const getInput = async (rootPath: string): Promise<InputOption> => {
+    const inputFiles = await fg(options.input, {
+      cwd: path.join(rootPath, options.srcDir),
+    });
+
+    return Object.fromEntries(
+      inputFiles.map(file => {
+        const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.js$/, '');
+        const filePath = path.join(rootPath, options.srcDir, file);
+
+        return [fileName, filePath];
+      })
+    );
+  };
+
+  /**
+   * Get Asset Output.
+   *
+   * @param fileName
+   */
+  const getAssetFileName = (fileName: string | null) => {
+    const extension = options.manifest === false ? '[extname]' : '[hash][extname]';
+
+    return fileName && options.preserveDirs
+      ? fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension)
+      : `[name]${extension}`;
+  };
 
   /**
    * Vite Plugin.
@@ -44,29 +78,17 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
-        const rootPath: string = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
+        const rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
         const base: string = options.base !== '' ? path.join(options.base, options.outDir) : '';
         const globals: GlobalsOption = {
           ...PluginGlobals,
           ...options.globals,
         };
         const external: ExternalOption = Object.keys(globals); // Set externals based on globals.
-        const input: InputOption = Object.fromEntries(
-          (
-            await fg(options.input, {
-              cwd: path.join(rootPath, options.srcDir),
-            })
-          ).map(file => [
-            file.replace(/\.js$/, ''), // fileName
-            path.join(rootPath, options.srcDir, file), // filePath
-          ])
-        );
+        const input: InputOption = await getInput(rootPath);
         const output: OutputOptions = {
           entryFileNames: options.manifest === false ? '[name].js' : '[name][hash].js',
-          assetFileNames: ({ originalFileNames: [fileName] }) => {
-            const extension = options.manifest === false ? '[extname]' : '[hash][extname]';
-            return fileName ? fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension) : `[name]${extension}`;
-          },
+          assetFileNames: ({ originalFileNames: [fileName] }) => getAssetFileName(fileName),
           banner: options.banner,
           footer: options.footer,
           globals,
