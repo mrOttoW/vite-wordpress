@@ -1,12 +1,12 @@
-import {DEFAULT_OPTIONS, VITE_PLUGIN_NAME} from './constants';
-import {AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig} from 'vite';
-import {AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions, PreRenderedAsset} from 'rollup';
+import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
+import { AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig } from 'vite';
+import { AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions, PreRenderedAsset } from 'rollup';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
 import path from 'path';
 import externalGlobals from 'rollup-plugin-external-globals';
-import fs from "fs";
+import fs from 'fs';
 
 interface Options {
   outDir?: string;
@@ -27,7 +27,6 @@ interface Asset {
   originalFileName: string;
   filePath: string;
 }
-
 
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
@@ -79,7 +78,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       return fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension);
     }
 
-    return `[name]${extension}`
+    return `[name]${extension}`;
   };
 
   /**
@@ -105,7 +104,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Preconfigure Config.
      */
-    config: (userConfig: UserConfig, {command, mode}: ConfigEnv): Promise<UserConfig> =>
+    config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
         const rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
         const base: string = getBase(command);
@@ -135,7 +134,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         };
         const optimizeDeps: DepOptimizationConfig = {
           esbuildOptions: {
-            loader: {'.js': 'jsx'}, // Need JSX syntax for dev server
+            loader: { '.js': 'jsx' }, // Need JSX syntax for dev server
           },
           exclude: Object.keys(globals), // Prevent pre-transform of globals during dev server.
         };
@@ -189,18 +188,18 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           fileName: asset.originalFileName,
           source: fs.readFileSync(asset.filePath),
         });
-      })
+      });
     },
 
     /**
      * Handle hot update for PHP files.
      */
-    handleHotUpdate({file, server}) {
+    handleHotUpdate({ file, server }) {
       if (file.endsWith('.php')) {
-        server.ws.send({type: 'full-reload', path: '*'});
+        server.ws.send({ type: 'full-reload', path: '*' });
       }
     },
   };
 }
 
-export {ViteWordPress};
+export { ViteWordPress };
