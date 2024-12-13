@@ -131,7 +131,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const output: OutputOptions = {
           entryFileNames: options.manifest === false ? '[name].js' : '[name].[hash].js',
           assetFileNames: (chunkInfo: PreRenderedAsset) => getAssetFileName(chunkInfo),
-          globals,
+          globals: Object.fromEntries(Object.entries(globals).map(([key, value]) => [key.replace('@wordpress/', 'wp-'), value])),
         };
         const rollupOptions: RollupOptions = {
           input,

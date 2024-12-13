@@ -1,0 +1,1 @@
+jQuery('.something').addClass('nice');

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { ViteWordPress } from '../src';
-import { config, pluginOptions } from './vite.config.base';
+import { config, pluginOptions, additionalPlugins } from './vite.config.base';
 
-config.plugins.push(ViteWordPress(pluginOptions));
+config.plugins = [...[ViteWordPress(pluginOptions)], ...additionalPlugins];
 
 export default defineConfig(config);

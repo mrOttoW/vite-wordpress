@@ -1,11 +1,15 @@
-export const config = {
+import { VitePhpAssetFile } from 'vite-php-asset-file';
+
+const config = {
   root: `playground`,
   plugins: [],
 };
 
-const manifestEnv = process.env.MANIFEST; // Access the environment variable
+// Access the environment variables
+const manifestEnv = process.env.MANIFEST;
+const assetFileEnv = process.env.ASSET_FILE;
 
-export const pluginOptions = {
+const pluginOptions = {
   manifest: !!manifestEnv,
   base: '/wp-content/themes/my-theme',
   input: [
@@ -18,3 +22,11 @@ export const pluginOptions = {
     'blocks/example-block/style.pcss',
   ],
 };
+
+const additionalPlugins = [];
+
+if (assetFileEnv !== undefined) {
+  additionalPlugins.push(VitePhpAssetFile());
+}
+
+export { config, pluginOptions, additionalPlugins };
