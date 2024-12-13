@@ -1,11 +1,12 @@
-import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
-import { AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig } from 'vite';
-import { AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions } from 'rollup';
+import {DEFAULT_OPTIONS, VITE_PLUGIN_NAME} from './constants';
+import {AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig} from 'vite';
+import {AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions, PreRenderedAsset} from 'rollup';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
 import path from 'path';
 import externalGlobals from 'rollup-plugin-external-globals';
+import fs from "fs";
 
 interface Options {
   outDir?: string;
@@ -21,8 +22,16 @@ interface Options {
   preserveDirs?: boolean;
 }
 
+interface Asset {
+  name: string;
+  originalFileName: string;
+  filePath: string;
+}
+
+
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
+  const assets = new Set<Asset>();
 
   /**
    * Construct input.
@@ -33,28 +42,44 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     const inputFiles = await fg(options.input, {
       cwd: path.join(rootPath, options.srcDir),
     });
-
-    return Object.fromEntries(
+    const entries = Object.fromEntries(
       inputFiles.map(file => {
-        const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.js$/, '');
+        const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.[^/.]+$/, '');
         const filePath = path.join(rootPath, options.srcDir, file);
 
         return [fileName, filePath];
       })
     );
+
+    // Ensure JSON files are emitted as assets.
+    Object.entries(entries).forEach(([fileName, filePath]) => {
+      if (filePath.endsWith('.json')) {
+        assets.add({
+          name: path.basename(fileName),
+          originalFileName: fileName.endsWith('.json') ? fileName : `${fileName}.json`,
+          filePath: filePath,
+        });
+        delete entries[fileName];
+      }
+    });
+
+    return entries;
   };
 
   /**
    * Construct Asset Output.
    *
-   * @param fileName
+   * @param chunkInfo
    */
-  const getAssetFileName = (fileName: string | null) => {
+  const getAssetFileName = (chunkInfo: PreRenderedAsset) => {
     const extension = options.manifest === false ? '[extname]' : '[hash][extname]';
 
-    return fileName && options.preserveDirs
-      ? fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension)
-      : `[name]${extension}`;
+    if (options.preserveDirs && chunkInfo.originalFileNames[0]) {
+      const fileName = chunkInfo.originalFileNames[0];
+      return fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension);
+    }
+
+    return `[name]${extension}`
   };
 
   /**
@@ -80,7 +105,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Preconfigure Config.
      */
-    config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
+    config: (userConfig: UserConfig, {command, mode}: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
         const rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
         const base: string = getBase(command);
@@ -92,7 +117,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const input: InputOption = await getInput(rootPath);
         const output: OutputOptions = {
           entryFileNames: options.manifest === false ? '[name].js' : '[name][hash].js',
-          assetFileNames: ({ originalFileNames: [fileName] }) => getAssetFileName(fileName),
+          assetFileNames: (chunkInfo: PreRenderedAsset) => getAssetFileName(chunkInfo),
           banner: options.banner,
           footer: options.footer,
           globals,
@@ -110,7 +135,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         };
         const optimizeDeps: DepOptimizationConfig = {
           esbuildOptions: {
-            loader: { '.js': 'jsx' }, // Need JSX syntax for dev server
+            loader: {'.js': 'jsx'}, // Need JSX syntax for dev server
           },
           exclude: Object.keys(globals), // Prevent pre-transform of globals during dev server.
         };
@@ -154,14 +179,28 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       })(),
 
     /**
+     * Generate Bundle Hook.
+     */
+    async generateBundle() {
+      assets.forEach(asset => {
+        this.emitFile({
+          type: 'asset',
+          name: asset.name,
+          fileName: asset.originalFileName,
+          source: fs.readFileSync(asset.filePath),
+        });
+      })
+    },
+
+    /**
      * Handle hot update for PHP files.
      */
-    handleHotUpdate({ file, server }) {
+    handleHotUpdate({file, server}) {
       if (file.endsWith('.php')) {
-        server.ws.send({ type: 'full-reload', path: '*' });
+        server.ws.send({type: 'full-reload', path: '*'});
       }
     },
   };
 }
 
-export { ViteWordPress };
+export {ViteWordPress};
