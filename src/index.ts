@@ -5,7 +5,7 @@ import {
   ConfigEnv,
   DepOptimizationConfig,
   ESBuildOptions,
-  Plugin,
+  Plugin, ServerOptions,
   transformWithEsbuild,
   UserConfig,
 } from 'vite';
@@ -34,7 +34,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
 
   /**
-   * Get input.
+   * Construct input.
    *
    * @param rootPath
    */
@@ -54,7 +54,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   };
 
   /**
-   * Get Asset Output.
+   * Construct Asset Output.
    *
    * @param fileName
    */
@@ -65,6 +65,19 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       ? fileName.replace(`${options.srcDir}/`, '').replace(/\.[^/.]+$/, extension)
       : `[name]${extension}`;
   };
+
+  /**
+   * Construct Vite's base.
+   *
+   * @param command
+   */
+  const getBase = (command: 'build' | 'serve'): string => {
+    if (options.base !== '' && command === 'build') {
+      return path.join(options.base, options.outDir);
+    }
+
+    return options.base;
+  }
 
   /**
    * Vite Plugin.
@@ -79,7 +92,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
         const rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
-        const base: string = options.base !== '' ? path.join(options.base, options.outDir) : '';
+        const base: string = getBase(command);
         const globals: GlobalsOption = {
           ...PluginGlobals,
           ...options.globals,
@@ -120,12 +133,16 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           assetsDir: '', // In traditional WP, the src directory is primarily used for resources, so assets directory is unnecessary.
           rollupOptions,
         };
+        const server: ServerOptions = {
+          host: '0.0.0.0',
+        }
         const preConfig: UserConfig = {
           assetsInclude: ['**/*.php'], // Allow PHP files as entries.
           base,
           optimizeDeps,
           esbuild,
           build,
+          server,
           resolve: {
             alias: options.alias,
           },
