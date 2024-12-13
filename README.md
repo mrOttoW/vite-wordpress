@@ -21,6 +21,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
   - Includes a preset of globals for wp dependencies and other common libraries in WordPress like react, react-dom, jquery, lodash etc.. (see src/globals.ts) with the option to add additional globals.
   - Uses `rollup-plugin-external-globals` plugin under the hood to ensure globals are NOT using "import" in compiled (block) files but are defined externally.
 - JSX/React code supported in `.js` files instead of using `.jsx`.
+- Paths in (block).json files like `file:./index.js` will be resolved with hashed file names when `manifest` is enabled.
 - Automatically reloads PHP files during development.
 - Preserved folder structure in the output directory.
 - Use vite `development` mode to compile unminified with sourcemaps (sourcemaps are also included during `serve` command)
