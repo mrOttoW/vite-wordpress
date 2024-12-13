@@ -1,14 +1,5 @@
 import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
-import {
-  AliasOptions,
-  BuildOptions,
-  ConfigEnv,
-  DepOptimizationConfig,
-  ESBuildOptions,
-  Plugin,
-  ServerOptions,
-  UserConfig,
-} from 'vite';
+import { AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig } from 'vite';
 import { AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions } from 'rollup';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
