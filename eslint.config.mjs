@@ -12,11 +12,12 @@ export default [
       globals: {
         ...globals.jquery,
         ...globals.node,
+        ...vitest.environments.env.globals,
       },
     },
   },
   {
-    ignores: ['tests/**', 'node_modules/**', 'dist/**', '.idea/**', '.vscode/**', 'reports/**', 'tar/**', '!**/*.js', '!**/*.ts'],
+    ignores: ['playground/**', 'node_modules/**', 'dist/**', '.idea/**', '.vscode/**', 'reports/**', 'tar/**', '!**/*.js', '!**/*.ts'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -28,7 +29,7 @@ export default [
     },
   },
   {
-    files: ['tests/*.test.js'],
+    files: ['test/*.test.js'],
     ...vitest.configs.recommended,
   },
 ];

@@ -1,6 +1,17 @@
 import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
 import { AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig } from 'vite';
-import { AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions, PreRenderedAsset } from 'rollup';
+import {
+  AddonFunction,
+  ExternalOption,
+  GlobalsOption,
+  InputOption,
+  NormalizedOutputOptions,
+  OutputBundle,
+  OutputOptions,
+  PreRenderedAsset,
+  RollupOptions,
+} from 'rollup';
+import { createBundleMap, resolveHashedBlockFilePaths } from './utils';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
@@ -12,14 +23,16 @@ interface Options {
   outDir?: string;
   srcDir?: string;
   base?: string;
+  target?: 'modules' | string | string[] | false;
   input?: string[];
   manifest?: boolean | string;
-  banner?: string | AddonFunction;
-  footer?: string | AddonFunction;
   globals?: GlobalsOption;
   alias?: AliasOptions;
-  target?: 'modules' | string | string[] | false;
   preserveDirs?: boolean;
+  wrapper?: boolean;
+  banner?: string | AddonFunction;
+  footer?: string | AddonFunction;
+  css?: string;
 }
 
 interface Asset {
@@ -30,7 +43,7 @@ interface Asset {
 
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
-  const assets = new Set<Asset>();
+  const assets = new Set<Asset>(); // Assets to emit.
 
   /**
    * Construct input.
@@ -50,12 +63,13 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       })
     );
 
-    // Ensure JSON files are emitted as assets.
+    // Ensure JSON files are emitted as assets (block.json).
     Object.entries(entries).forEach(([fileName, filePath]) => {
       if (filePath.endsWith('.json')) {
+        const assetFileName = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
         assets.add({
-          name: path.basename(fileName),
-          originalFileName: fileName.endsWith('.json') ? fileName : `${fileName}.json`,
+          name: path.basename(assetFileName),
+          originalFileName: path.join(options.srcDir, assetFileName),
           filePath: filePath,
         });
         delete entries[fileName];
@@ -71,7 +85,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
    * @param chunkInfo
    */
   const getAssetFileName = (chunkInfo: PreRenderedAsset) => {
-    const extension = options.manifest === false ? '[extname]' : '[hash][extname]';
+    const extension = options.manifest === false ? '[extname]' : '.[hash][extname]';
 
     if (options.preserveDirs && chunkInfo.originalFileNames[0]) {
       const fileName = chunkInfo.originalFileNames[0];
@@ -115,10 +129,8 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const external: ExternalOption = Object.keys(globals); // Set externals based on globals.
         const input: InputOption = await getInput(rootPath);
         const output: OutputOptions = {
-          entryFileNames: options.manifest === false ? '[name].js' : '[name][hash].js',
+          entryFileNames: options.manifest === false ? '[name].js' : '[name].[hash].js',
           assetFileNames: (chunkInfo: PreRenderedAsset) => getAssetFileName(chunkInfo),
-          banner: options.banner,
-          footer: options.footer,
           globals,
         };
         const rollupOptions: RollupOptions = {
@@ -178,17 +190,44 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       })(),
 
     /**
-     * Generate Bundle Hook.
+     * Build Start Hook.
      */
-    async generateBundle() {
+    buildStart() {
+      // Emit asset files.
       assets.forEach(asset => {
         this.emitFile({
           type: 'asset',
           name: asset.name,
-          fileName: asset.originalFileName,
+          originalFileName: asset.originalFileName,
           source: fs.readFileSync(asset.filePath),
         });
       });
+    },
+
+    /**
+     * Generate Bundle Hook.
+     */
+    async generateBundle(bundleOptions: NormalizedOutputOptions, bundle: OutputBundle) {
+      const bundleMap = createBundleMap(bundleOptions, bundle);
+
+      for (const module of Object.values(bundle)) {
+        if (module.type === 'asset' && module.fileName.endsWith('.json') && options.manifest !== false) {
+          const jsonFileName = module.fileName;
+          const jsonObject = JSON.parse(module.source.toString());
+
+          // Ensure file paths in block.json use hashed file names.
+          module.source = JSON.stringify(resolveHashedBlockFilePaths(jsonFileName, jsonObject, bundleMap, bundleOptions), null, 2);
+        }
+
+        if (module.type === 'chunk' && module.facadeModuleId) {
+          const isJsChunk = ['.js', '.ts', '.tsx', '.jsx'].some(ext => module.facadeModuleId.endsWith(ext));
+
+          // Include code wrappers if enabled.
+          if (isJsChunk && options.wrapper) {
+            module.code = options.banner + module.code + options.footer;
+          }
+        }
+      }
     },
 
     /**
