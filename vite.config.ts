@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
-// @ts-ignore
-import pkg from './package.json';
 
 export default defineConfig({
   plugins: [
@@ -23,7 +21,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['fs', 'path', 'crypto', ...Object.keys(pkg.dependencies)],
+      external: ['fs', 'path', 'crypto', 'deepmerge', 'fast-glob', 'rollup-plugin-external-globals'],
     },
   },
 });

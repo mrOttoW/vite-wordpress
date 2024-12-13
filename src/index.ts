@@ -5,8 +5,8 @@ import {
   ConfigEnv,
   DepOptimizationConfig,
   ESBuildOptions,
-  Plugin, ServerOptions,
-  transformWithEsbuild,
+  Plugin,
+  ServerOptions,
   UserConfig,
 } from 'vite';
 import { AddonFunction, ExternalOption, GlobalsOption, InputOption, OutputOptions, RollupOptions } from 'rollup';
@@ -77,7 +77,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     }
 
     return options.base;
-  }
+  };
 
   /**
    * Vite Plugin.
@@ -135,7 +135,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         };
         const server: ServerOptions = {
           host: '0.0.0.0',
-        }
+        };
         const preConfig: UserConfig = {
           assetsInclude: ['**/*.php'], // Allow PHP files as entries.
           base,
@@ -165,7 +165,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Handle hot update for PHP files.
      */
-    handleHotUpdate({ file, server, modules }) {
+    handleHotUpdate({ file, server }) {
       if (file.endsWith('.php')) {
         server.ws.send({ type: 'full-reload', path: '*' });
       }
