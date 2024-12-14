@@ -1,5 +1,15 @@
 import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
-import { AliasOptions, BuildOptions, ConfigEnv, DepOptimizationConfig, ESBuildOptions, Plugin, ServerOptions, UserConfig } from 'vite';
+import {
+  AliasOptions,
+  BuildOptions,
+  ConfigEnv,
+  DepOptimizationConfig,
+  ESBuildOptions,
+  Plugin,
+  ServerOptions,
+  UserConfig,
+  ViteDevServer,
+} from 'vite';
 import {
   AddonFunction,
   ExternalOption,
@@ -228,6 +238,24 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           }
         }
       }
+    },
+
+    /**
+     * Configure Server Hook.
+     *
+     * @param server
+     */
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === path.join(server.config.base, `${VITE_PLUGIN_NAME}.json`)) {
+          const { base, srcDir, outDir, css, manifest } = options;
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          res.end(JSON.stringify({ base, srcDir, outDir, css, manifest }, null, 2)); // Expose plugin config.
+        } else {
+          next();
+        }
+      });
     },
 
     /**
