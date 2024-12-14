@@ -54,6 +54,7 @@ interface Asset {
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
   const assets = new Set<Asset>(); // Assets to emit.
+  let command: 'build' | 'serve'; // Vite command.
 
   /**
    * Construct input.
@@ -200,18 +201,27 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       })(),
 
     /**
+     * Config Resolved Hook.
+     */
+    configResolved(config) {
+      command = config.command;
+    },
+
+    /**
      * Build Start Hook.
      */
     buildStart() {
       // Emit asset files.
-      assets.forEach(asset => {
-        this.emitFile({
-          type: 'asset',
-          name: asset.name,
-          originalFileName: asset.originalFileName,
-          source: fs.readFileSync(asset.filePath),
+      if (command === 'build') {
+        assets.forEach(asset => {
+          this.emitFile({
+            type: 'asset',
+            name: asset.name,
+            originalFileName: asset.originalFileName,
+            source: fs.readFileSync(asset.filePath),
+          });
         });
-      });
+      }
     },
 
     /**
