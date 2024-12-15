@@ -20,6 +20,7 @@ import {
   OutputOptions,
   PreRenderedAsset,
   RollupOptions,
+  EmittedAsset,
 } from 'rollup';
 import { createBundleMap, resolveHashedBlockFilePaths } from './utils';
 import deepmerge from 'deepmerge';
@@ -47,6 +48,7 @@ interface Options {
 
 interface Asset {
   name: string;
+  fileName: string;
   originalFileName: string;
   filePath: string;
 }
@@ -80,6 +82,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const assetFileName = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
         assets.add({
           name: path.basename(assetFileName),
+          fileName: assetFileName,
           originalFileName: path.join(options.srcDir, assetFileName),
           filePath: filePath,
         });
@@ -211,15 +214,22 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      * Build Start Hook.
      */
     buildStart() {
-      // Emit asset files.
       if (command === 'build') {
         assets.forEach(asset => {
-          this.emitFile({
+          const emittedAsset: EmittedAsset = {
             type: 'asset',
             name: asset.name,
             originalFileName: asset.originalFileName,
             source: fs.readFileSync(asset.filePath),
-          });
+          };
+
+          // It is mandatory in WordPress for the file to be named block.json.
+          // This prevents the file name being hashed.
+          if (asset.name === 'block.json') {
+            emittedAsset.fileName = asset.fileName;
+          }
+
+          this.emitFile(emittedAsset);
         });
       }
     },
