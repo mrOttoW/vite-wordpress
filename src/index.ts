@@ -267,7 +267,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
-        if (req.url === path.join(server.config.base, `${VITE_PLUGIN_NAME}.json`)) {
+        if (req.url && req.url.includes(`${VITE_PLUGIN_NAME}.json`)) {
           const { base, srcDir, outDir, css, manifest } = options;
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 200;
