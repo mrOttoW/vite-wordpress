@@ -10,7 +10,7 @@ export const DEFAULT_OPTIONS = {
   manifest: false,
   preserveDirs: true,
   wrapper: true,
-  banner: "(() => {'use strict';",
-  footer: '})();',
+  banner: "(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {",
+  footer: '})})();',
   css: 'pcss',
 };
