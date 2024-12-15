@@ -1,6 +1,6 @@
 {
   "name": "vite-wordpress",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A Vite configuration for traditional WordPress development.",
   "files": [
     "dist/"
