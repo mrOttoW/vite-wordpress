@@ -24,6 +24,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 - Paths in (block).json files like `file:./index.js` will be resolved with hashed file names when `manifest` is enabled.
 - Automatically reloads PHP files during development.
 - Preserved folder structure in the output directory.
+- Complete Vite development server & HMR (Hot Module Replacement) integration.
 - Use vite `development` mode to compile unminified with sourcemaps (sourcemaps are also included during `serve` command)
 - All configurations can be overridden using Vite's default configuration options.
 
