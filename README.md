@@ -4,7 +4,7 @@
   </a>
   <h1>⚡️Vite 6 Config for Traditional WordPress Development</h1>
   <p>
-Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development.
+Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development with WP Interactivity API support and HMR & Vite DevServer integration.
 </p>
   <img src="https://img.shields.io/github/v/release/mrOttoW/vite-wordpress" alt="GitHub release" />
   <img src="https://img.shields.io/npm/dependency-version/vite-wordpress/peer/vite" alt="npm peer dependency version" />
@@ -77,11 +77,7 @@ project-root/
 │   │   └── main.pcss
 │   └── blocks
 │       └── example-block
-│           ├─ block.json
-│           ├─ render.php
-│           ├─ view.js
-│           ├─ style.pcss
-│           ├─ editor.pcss (imported into index.js)
+│           ├─ style.pcss (imported into index.js)
 │           └─ index.js
 ├── build/
 │   ├── js
@@ -90,10 +86,6 @@ project-root/
 │   │   └── main.css
 │   └── blocks
 │       └── example-block
-│           ├─ block.json
-│           ├─ render.php
-│           ├─ view.js
-│           ├─ style.css
 │           ├─ index.css
 │           └─ index.js
 ├── vite.config.js
@@ -109,14 +101,7 @@ export default {
   plugins: [
     ViteWordPress({
       base: '/wp-content/plugins/my-plugin',
-      input: [
-        'js/*.js', 
-        'css/*.pcss',
-        'blocks/*/*.js',
-        'blocks/*/style.pcss',
-        'blocks/*/block.json', 
-        'blocks/*/render.php'
-      ],
+      input: ['js/*.js', 'css/*.pcss', 'blocks/*/*.js'],
     }),
   ],
 };
