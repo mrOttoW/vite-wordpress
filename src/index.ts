@@ -19,11 +19,10 @@ import {
   OutputBundle,
   OutputOptions,
   PreRenderedAsset,
-  PreRenderedChunk,
   RollupOptions,
   EmittedAsset,
 } from 'rollup';
-import { createBundleMap, resolveHashedBlockFilePaths } from './utils';
+import { createBundleMap, resolveHashedBlockFilePaths, checkForInteractivity } from './utils';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
@@ -58,6 +57,7 @@ interface Asset {
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
   const assets = new Set<Asset>(); // Assets to emit.
+  const interactivityMap = {}; // Entries that include interactivity API.
   let command: 'build' | 'serve'; // Vite command.
 
   /**
@@ -77,17 +77,17 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       })
     );
 
-    // Ensure JSON files are emitted as assets (block.json).
     Object.entries(entries).forEach(([fileName, filePath]) => {
+      // Ensure JSON files are emitted as assets (block.json).
       if (filePath.endsWith('.json')) {
-        const assetFileName = fileName.endsWith('.json') ? fileName : `${fileName}.json`;
-        assets.add({
-          name: path.basename(assetFileName),
-          fileName: assetFileName,
-          originalFileName: path.join(options.srcDir, assetFileName),
-          filePath: filePath,
-        });
+        addAsset(fileName.endsWith('.json') ? fileName : `${fileName}.json`, filePath);
         delete entries[fileName];
+      }
+      if (options.allowedJsExtensions.some(ext => filePath.endsWith(ext))) {
+        // Map JS files that includes the WP Interactivity API.
+        if (checkForInteractivity(filePath)) {
+          interactivityMap[fileName] = filePath;
+        }
       }
     });
 
@@ -117,6 +117,19 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     }
 
     return options.base;
+  };
+
+  /**
+   * Add asset to emit.
+   */
+  const addAsset = (fileName: string, filePath: string) => {
+    assets.add({
+      name: path.basename(fileName),
+      fileName,
+      originalFileName: path.join(options.srcDir, fileName),
+      filePath: filePath,
+    });
+    return true;
   };
 
   /**
@@ -193,7 +206,11 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
         userConfig = deepmerge(preConfig, userConfig);
 
-        const rollupPlugins = [externalGlobals(globals)];
+        const rollupPlugins = [
+          externalGlobals(globals, {
+            exclude: Object.values(interactivityMap),
+          }),
+        ];
 
         // Ensures globals are NOT using "import" in the compiled files but are defined externally.
         if (Array.isArray(userConfig.build?.rollupOptions?.plugins)) {
@@ -253,9 +270,10 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
         if (module.type === 'chunk' && module.facadeModuleId) {
           const isJsChunk = options.allowedJsExtensions.some(ext => module.facadeModuleId.endsWith(ext));
+          const isInteractivity = Object.values(interactivityMap).includes(module.facadeModuleId);
 
           // Include code wrappers if enabled.
-          if (isJsChunk && options.wrapper) {
+          if (isJsChunk && !isInteractivity && options.wrapper) {
             module.code = options.banner + module.code + options.footer;
           }
         }

@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup';
 
 export function camelToKebab(str: string): string {
@@ -61,4 +62,14 @@ export const resolveHashedBlockFilePaths = (
   }
 
   return jsonObject;
+};
+
+export const checkForInteractivity = (filePath: string) => {
+  const content = fs.readFileSync(filePath, 'utf8');
+
+  if (content.includes('@wordpress/interactivity')) {
+    return true;
+  }
+
+  return false;
 };
