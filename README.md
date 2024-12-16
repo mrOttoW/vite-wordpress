@@ -174,7 +174,7 @@ export default {
     ViteWordPress({
         base: '/wp-content/plugins/my-plugin',
         input: ['main.js'],
-      + manifest: true
++       manifest: true
     }),
   ],
 };
@@ -223,7 +223,7 @@ For example the following `block.json` configurations:
 
 ```
 
-Will convert into 
+Will include the hashed file names after compilation.
 ```json
 {
     "editorScript": "file:./index.BFKxLtHH.js",
