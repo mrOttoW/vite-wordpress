@@ -249,22 +249,19 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
        * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
        */
       const VALID_ID_PREFIX = `${config.base}@id/`;
-      const importRegex = new RegExp(
-        `${VALID_ID_PREFIX}(${externals.join("|")})`,
-        "g"
-      );
+      const importRegex = new RegExp(`${VALID_ID_PREFIX}(${externals.join('|')})`, 'g');
       if (config.plugins && Array.isArray(config.plugins)) {
         config.plugins.push({
-          name: "vite-wordpress:ignore-static-import-replace-idprefix",
+          name: 'vite-wordpress:ignore-static-import-replace-idprefix',
           transform(code) {
             if (importRegex.test(code)) {
               const transformedCode = code.replace(importRegex, (m, s1) => s1);
               const map = this.getCombinedSourcemap?.() || null;
 
-              return {code: transformedCode, map};
+              return { code: transformedCode, map };
             }
 
-            return null
+            return null;
           },
         });
       }
@@ -287,10 +284,9 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
        * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
        */
       if ((externals as string[]).includes(id)) {
-        return {id, external: true};
+        return { id, external: true };
       }
     },
-
 
     /**
      * Load hook.
