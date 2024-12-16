@@ -241,12 +241,6 @@ Will include the hashed file names after compilation.
 }
 ```
 
-### manifest.php
-
-The following plugin also allows you to generate a PHP manifest file that is compatible with the DevServer:
-
-https://github.com/mrOttoW/vite-php-manifest
-
 ## WP Interactivity API
 
 `vite-wordpress` also provides out-of-the-box support for development with the 
@@ -259,6 +253,18 @@ This will prevent errors from Vite's internal `vite:import-analysis` plugin fail
 
 A project example (WordPress plugin) can be found here:
 https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
+
+## Other useful plugins
+
+### PHP Manifest
+Allows you to generate a PHP manifest file that is compatible with the DevServer.
+
+https://github.com/mrOttoW/vite-php-manifest
+
+### Asset Callers
+Identifies and emit assets referenced in PHP functions/callers throughout your plugin/theme during the build process.
+
+https://github.com/mrOttoW/vite-php-asset-callers
 
 ## Options
 

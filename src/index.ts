@@ -200,7 +200,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           build,
           server,
           resolve: {
-            extensions: ['.ts', '.tsx', '.js', '.jsx'],
+            extensions: options.allowedJsExtensions,
             alias: options.alias,
           },
         };
