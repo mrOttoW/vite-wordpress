@@ -62,86 +62,122 @@ export default {
 
 ## Options
 
-The plugin supports the following options:
-Got it! Here's the updated format following your structure:
 
-### `outDir` (default: `'build'`)
+### `outDir`
+*Type:* `string`
 
-Type: `string`
+*Default:* `'build'`
 
 Directory for output files.
 
-### `srcDir` (default: `'src'`)
+---
 
-Type: `string`
+### `srcDir`
+*Type:* `string`
+
+*Default:* `'src'`
 
 Directory for source files.
 
-### `base` (default: `''`)
+---
 
-Type: `string`
+### `base`
+*Type:* `string`
+
+*Default:* `''`
 
 Sets the base public path for generating URLs for assets in CSS/JS. If set, it will be appended with the `outDir` during the `build` command (e.g., `/wp-content/themes/my-theme/{outDir}`).
 
-### `input` (default: `[]`)
+---
 
-Type: `string[]`
+### `input`
+*Type:* `string[]`
+
+*Default:* `[]`
 
 List of input files relative to `srcDir` with glob options.
 
-### `css` (default: `'pcss'`)
+---
 
-Type: `string`
+### `css`
+*Type:* `string`
+
+*Default:* `'pcss'`
 
 CSS extension used for uncompiled files.
 
-### `manifest` (default: `false`)
+---
 
-Type: `boolean | string`
+### `manifest`
+*Type:* `boolean | string`
+
+*Default:* `false`
 
 Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add a hash to all compiled files).
 
-### `preserveDirs` (default: `true`)
+---
 
-Type: `boolean`
+### `preserveDirs`
+*Type:* `boolean`
+
+*Default:* `true`
 
 Preserve folder structure in the output. If set to `false`, all files are flattened into a single directory.
 
-### `globals` (default: `{}`)
+---
 
-Type: `object`
+### `globals`
+*Type:* `object`
+
+*Default:* `{}`
 
 Maps module names to global variables to mark them as external dependencies (in addition to preset globals).
 
-### `alias` (default: `{}`)
+---
 
-Type: `object`
+### `alias`
+*Type:* `object`
+
+*Default:* `{}`
 
 Define path aliases.
 
-### `target` (default: `'es2017'`)
+---
 
-Type: `string | string[] | false`
+### `target`
+*Type:* `string | string[] | false`
+
+*Default:* `'es2017'`
 
 Esbuild target.
 
-### `wrapper` (default: `true`)
+---
 
-Type: `boolean`
+### `wrapper`
+*Type:* `boolean`
 
-Enable or disable code wrappers (banner & footer) for JavaScript chunks.
+*Default:* `true`
 
-### `banner` (default: `'(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {'`)
+Enable or disable code wrappers for JavaScript chunks.
 
-Type: `string | function`
+---
+
+### `banner`
+*Type:* `string | function`
+
+*Default:* `'(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {'`
 
 Code wrapper banner to prepend to output JS files.
 
-### `footer` (default: `'})})();'`)
+---
 
-Type: `string | function`
+### `footer`
+*Type:* `string | function`
+
+*Default:* `'})})();'`
 
 Code wrapper footer to append to output JS files.
+
 ## Example Project Structure
 
 ```
