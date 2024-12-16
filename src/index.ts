@@ -213,7 +213,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           }),
         ];
 
-        // Ensures globals are NOT using "import" in the compiled files but are defined externally.
+        // Ensures globals are NOT using "import" in the compiled files but are defined externally for non-modules.
         if (Array.isArray(userConfig.build?.rollupOptions?.plugins)) {
           userConfig.build.rollupOptions.plugins = [...userConfig.build.rollupOptions.plugins, ...rollupPlugins];
         } else {

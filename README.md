@@ -17,14 +17,17 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 
 - Compiles and outputs JavaScript, CSS, and other assets directly into WordPress-ready formats.
 - Glob options to configure input paths.
-- Automatically externalizes WordPress globals like `wp` and libraries like `React` to reduce bundle sizes.
-  - Includes a preset of globals for wp dependencies and other common libraries in WordPress like react, react-dom, jquery, lodash etc.. (see src/globals.ts) with the option to add additional globals.
-  - Uses `rollup-plugin-external-globals` plugin under the hood to ensure globals are NOT using "import" in non modules (WP Interactivity API) in compiled files but are defined externally.
+- Complete Vite development server & HMR (Hot Module Replacement) integration.
 - JSX/React code supported in `.js` files instead of using `.jsx`.
+- Support for WP Interactivity API blocks.
+  - Scripts with `@wordpress/interactivity` imports will be compiled as modules. 
+  - The Vite development server will enable HMR for WP Interactivity API blocks.
+- Automatically externalizes WordPress globals like `wp` and libraries like `React` to reduce bundle sizes.
+  - Includes a preset of globals for wp dependencies and other common libraries in WordPress like react, react-dom, jquery, lodash etc.. (see src/globals.ts) with option to add additional globals.
+  - Uses `rollup-plugin-external-globals` plugin under the hood to ensure that globals are not imported for non-modules in compiled files but are instead defined externally.
 - Paths in (block).json files like `file:./index.js` will be resolved with hashed file names when `manifest` is enabled.
 - Automatically reloads PHP files during development.
 - Preserved folder structure in the output directory.
-- Complete Vite development server & HMR (Hot Module Replacement) integration.
 - Use vite `development` mode to compile unminified with sourcemaps (sourcemaps are also included during `serve` command)
 - All configurations can be overridden using Vite's default configuration options.
 
@@ -74,7 +77,11 @@ project-root/
 │   │   └── main.pcss
 │   └── blocks
 │       └── example-block
-│           ├─ style.pcss (imported into index.js)
+│           ├─ block.json
+│           ├─ render.php
+│           ├─ view.js
+│           ├─ style.pcss
+│           ├─ editor.pcss (imported into index.js)
 │           └─ index.js
 ├── build/
 │   ├── js
@@ -83,6 +90,10 @@ project-root/
 │   │   └── main.css
 │   └── blocks
 │       └── example-block
+│           ├─ block.json
+│           ├─ render.php
+│           ├─ view.js
+│           ├─ style.css
 │           ├─ index.css
 │           └─ index.js
 ├── vite.config.js
@@ -98,13 +109,22 @@ export default {
   plugins: [
     ViteWordPress({
       base: '/wp-content/plugins/my-plugin',
-      input: ['js/*.js', 'css/*.pcss', 'blocks/*/index.js'],
+      input: [
+        'js/*.js', 
+        'css/*.pcss',
+        'blocks/*/*.js',
+        'blocks/*/style.pcss',
+        'blocks/*/block.json', 
+        'blocks/*/render.php'
+      ],
     }),
   ],
 };
 ```
 
-A project example (WordPress plugin) can be found here: https://github.com/mrOttoW/vite-wordpress-plugin-block-example
+Project examples (WordPress plugins) can be found here:
+- Dynamic block: https://github.com/mrOttoW/vite-wordpress-plugin-block-example
+- WP Interactivity API block: https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
 ## Dev Server & HMR
 
@@ -241,6 +261,19 @@ Will include the hashed file names after compilation.
 The following plugin also allows you to generate a PHP manifest file that is compatible with the DevServer:
 
 https://github.com/mrOttoW/vite-php-manifest
+
+## WP Interactivity API
+
+`vite-wordpress` also provides out-of-the-box support for development with the 
+<a href="https://developer.wordpress.org/block-editor/reference-guides/interactivity-api/" target="_blank">WP Interactivity API</a>. 
+Any scripts that import `@wordpress/interactivity` (e.g., view scripts) will be compiled as modules, allowing them to
+be resolved by the <a href="https://make.wordpress.org/core/2023/11/21/exploration-to-support-modules-and-import-maps/" target="_blank">WordPress import map</a>.
+
+Additionally, `vite-wordpress` ensures that the development server ignores these static imports, allowing them to be resolved by WordPress rather than by Vite.
+This will prevent errors from Vite's internal `vite:import-analysis` plugin failing the resolve import. 
+
+A project example (WordPress plugin) can be found here:
+https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
 ## Options
 
