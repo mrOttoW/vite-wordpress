@@ -241,6 +241,12 @@ Will include the hashed file names after compilation.
 }
 ```
 
+### manifest.php
+
+The following plugin also allows you to generate a PHP manifest file that is compatible with the DevServer:
+
+https://github.com/mrOttoW/vite-php-manifest
+
 ## WP Interactivity API
 
 `vite-wordpress` also provides out-of-the-box support for development with the 
@@ -254,17 +260,51 @@ This will prevent errors from Vite's internal `vite:import-analysis` plugin fail
 A project example (WordPress plugin) can be found here:
 https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
-## Other useful plugins
+## Asset Callers
+Let's say you have the following project:
+```
+project-root/
+├── classes/
+│   ├── Plugin.php
+│   ├── Helpers.php
+│   ├── Fonts.php
+│   └── Integration.php
+├── templates/
+│   ├── table.php
+│   ├── button.php
+│   └── card.php
+├── src/
+│   ├── js
+│   │   └── main.js
+│   ├── css
+│   │   └── main.pcss
+│   └── assets/
+│       ├── svg/
+│       │   ├── star.svg
+│       │   └── coffee.svg
+│       ├── images/
+│       │   ├── background.png
+│       │   └── logo.png
+│       └── fonts/
+│           └── arial.woff
+├── vite.config.js
+....
+```
 
-### PHP Manifest
-Allows you to generate a PHP manifest file that is compatible with the DevServer.
+And you have various PHP functions that retrieve asset files from the `assets` folder, used across different template files or classes like:
+```php
+<?php
+  echo Helpers::get_image('logo.png');
+  echo Helpers::get_svg('coffee.svg');
+  echo $fonts->get_font('arial.woff')
+```
 
-https://github.com/mrOttoW/vite-php-manifest
-
-### Asset Callers
-Identifies and emit assets referenced in PHP functions/callers throughout your plugin/theme during the build process.
+You can use the following plugin to identify and emit assets referenced in PHP functions or callers during the build process. This ensures that Vite compiles only the assets used throughout the project:
 
 https://github.com/mrOttoW/vite-php-asset-callers
+
+
+The plugin parses PHP code to locate embedded assets, such as image files, SVGs, fonts, or other resources. It then processes and emits these assets for compilation in the final bundle.
 
 ## Options
 
