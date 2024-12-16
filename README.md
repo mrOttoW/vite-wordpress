@@ -104,7 +104,7 @@ export default {
 };
 ```
 
-A project example can be found here: https://github.com/mrOttoW/vite-wordpress-plugin-block-example
+A project example (WordPress plugin) can be found here: https://github.com/mrOttoW/vite-wordpress-plugin-block-example
 
 ## Dev Server & HMR
 
@@ -162,6 +162,83 @@ Example of registering and enqueueing the asset file based on the given example 
 
 ```
 
+Alternatively you can use the manifest and hashed file names for cache busting.
+
+## Manifest & Hash
+
+The `manifest` enabler in the plugin will add the manifest file but also add hash to file names. 
+
+```diff
+export default {
+  plugins: [
+    ViteWordPress({
+        base: '/wp-content/plugins/my-plugin',
+        input: ['main.js'],
+      + manifest: true
+    }),
+  ],
+};
+
+```
+
+You can use the Manifest Resolver from <a href="https://github.com/mrOttoW/vite-wordpress-php#manifest-resolver">vite-wordpress-php</a> to handle reading and accessing the Vite manifest file and additionally integrates it into the dev server.
+
+#### Example using the facade:
+```php
+
+use ViteWordPress\DevServer;
+use ViteWordPress\Manifest;
+
+$manifest = Manifest::create( 'absolute/path/to/manifest.json' ); // Also works with a PHP manifest file.
+
+// When using the dev server you need to include the manifest.
+( new DevServer( $manifest ) )->register();
+
+// Enqueue scripts hook.
+add_action( 'wp_enqueue_scripts', function () {
+	$file_name = Manifest::get_file( 'app.js' );
+
+	wp_enqueue_script( 'my-app', get_stylesheet_directory() . "build/{$file_name}" );
+} );
+```
+
+### block.json
+`vite-wordpress` ensures that JSON files are emitted as assets instead of being converted into JavaScript files. 
+This keeps the `block.json` file readable and compatible with functions like `register_block_type()` in WordPress. 
+It is also crucial for the `block.json` file to retain its original name to remain accessible in WordPress, 
+preventing it from being hashed when the `manifest` option is enabled.
+
+Additionally, all URLs found in the `block.json` file will automatically be resolved to their corresponding hashed filenames.
+
+For example the following `block.json` configurations:
+
+```json
+{
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style.css",
+    "render": "file:./render.php",
+    "viewScript": "file:./view.js"
+}
+
+```
+
+Will convert into 
+```json
+{
+    "editorScript": "file:./index.BFKxLtHH.js",
+    "editorStyle": "file:./index.BvpkZCOy.css",
+    "style": "file:./style.WLomad7Q.css",
+    "render": "file:./render.Aelou6by.php",
+    "viewScript": "file:./view.BQK8SocZ.js"
+}
+```
+
+### manifest.php
+
+The following plugin also allows you to generate a PHP manifest file that is compatible with the DevServer:
+
+https://github.com/mrOttoW/vite-php-manifest
 
 ## Options
 
