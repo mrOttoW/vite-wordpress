@@ -19,7 +19,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 - Glob options to configure input paths.
 - Automatically externalizes WordPress globals like `wp` and libraries like `React` to reduce bundle sizes.
   - Includes a preset of globals for wp dependencies and other common libraries in WordPress like react, react-dom, jquery, lodash etc.. (see src/globals.ts) with the option to add additional globals.
-  - Uses `rollup-plugin-external-globals` plugin under the hood to ensure globals are NOT using "import" in compiled (block) files but are defined externally.
+  - Uses `rollup-plugin-external-globals` plugin under the hood to ensure globals are NOT using "import" in non modules (WP Interactivity API) in compiled files but are defined externally.
 - JSX/React code supported in `.js` files instead of using `.jsx`.
 - Paths in (block).json files like `file:./index.js` will be resolved with hashed file names when `manifest` is enabled.
 - Automatically reloads PHP files during development.

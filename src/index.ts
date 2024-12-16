@@ -208,7 +208,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
         const rollupPlugins = [
           externalGlobals(globals, {
-            exclude: Object.values(interactivityMap),
+            exclude: Object.values(interactivityMap), // Exclude modules (files using WP interactivity API)
           }),
         ];
 
