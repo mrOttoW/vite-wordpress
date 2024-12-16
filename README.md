@@ -54,6 +54,7 @@ import { ViteWordPress } from 'vite-wordpress';
 export default {
   plugins: [
     ViteWordPress({
+      base: '/wp-content/plugins/my-plugin',
       input: ['main.js'],
     }),
   ],
@@ -96,6 +97,7 @@ import { ViteWordPress } from 'vite-wordpress';
 export default {
   plugins: [
     ViteWordPress({
+      base: '/wp-content/plugins/my-plugin',
       input: ['js/*.js', 'css/*.pcss', 'blocks/*/index.js'],
     }),
   ],
