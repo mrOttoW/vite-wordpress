@@ -117,7 +117,7 @@ This NPM package can be used in hand with the <a href="https://github.com/mrOtto
 Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` to automatically detect all enqueued scripts from the project through hooks and resolves these scripts to source files served by the development server. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
 
 You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
- 
+
 ## Asset File & Cache busting
 
 Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
@@ -166,7 +166,7 @@ Alternatively you can use the manifest and hashed file names for cache busting.
 
 ## Manifest & Hash
 
-The `manifest` enabler in the plugin will add the manifest file but also add hash to file names. 
+The `manifest` enabler in the plugin will add the manifest file but also add hash to file names.
 
 ```diff
 export default {
@@ -184,6 +184,7 @@ export default {
 You can use the Manifest Resolver from <a href="https://github.com/mrOttoW/vite-wordpress-php#manifest-resolver">vite-wordpress-php</a> to handle reading and accessing the Vite manifest file and additionally integrates it into the dev server.
 
 #### Example using the facade:
+
 ```php
 
 use ViteWordPress\DevServer;
@@ -203,9 +204,10 @@ add_action( 'wp_enqueue_scripts', function () {
 ```
 
 ### block.json
-`vite-wordpress` ensures that JSON files are emitted as assets instead of being converted into JavaScript files. 
-This keeps the `block.json` file readable and compatible with functions like `register_block_type()` in WordPress. 
-It is also crucial for the `block.json` file to retain its original name to remain accessible in WordPress, 
+
+`vite-wordpress` ensures that JSON files are emitted as assets instead of being converted into JavaScript files.
+This keeps the `block.json` file readable and compatible with functions like `register_block_type()` in WordPress.
+It is also crucial for the `block.json` file to retain its original name to remain accessible in WordPress,
 preventing it from being hashed when the `manifest` option is enabled.
 
 Additionally, all URLs found in the `block.json` file will automatically be resolved to their corresponding hashed filenames.
@@ -214,23 +216,23 @@ For example the following `block.json` configurations:
 
 ```json
 {
-    "editorScript": "file:./index.js",
-    "editorStyle": "file:./index.css",
-    "style": "file:./style.css",
-    "render": "file:./render.php",
-    "viewScript": "file:./view.js"
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style.css",
+  "render": "file:./render.php",
+  "viewScript": "file:./view.js"
 }
-
 ```
 
 Will include the hashed file names after compilation.
+
 ```json
 {
-    "editorScript": "file:./index.BFKxLtHH.js",
-    "editorStyle": "file:./index.BvpkZCOy.css",
-    "style": "file:./style.WLomad7Q.css",
-    "render": "file:./render.Aelou6by.php",
-    "viewScript": "file:./view.BQK8SocZ.js"
+  "editorScript": "file:./index.BFKxLtHH.js",
+  "editorStyle": "file:./index.BvpkZCOy.css",
+  "style": "file:./style.WLomad7Q.css",
+  "render": "file:./render.Aelou6by.php",
+  "viewScript": "file:./view.BQK8SocZ.js"
 }
 ```
 
@@ -242,118 +244,130 @@ https://github.com/mrOttoW/vite-php-manifest
 
 ## Options
 
-
 ### `outDir`
-*Type:* `string`
 
-*Default:* `'build'`
+_Type:_ `string`
+
+_Default:_ `'build'`
 
 Directory for output files.
 
 ---
 
 ### `srcDir`
-*Type:* `string`
 
-*Default:* `'src'`
+_Type:_ `string`
+
+_Default:_ `'src'`
 
 Directory for source files.
 
 ---
 
 ### `base`
-*Type:* `string`
 
-*Default:* `''`
+_Type:_ `string`
+
+_Default:_ `''`
 
 Sets the base public path for generating URLs for assets in CSS/JS. If set, it will be appended with the `outDir` during the `build` command (e.g., `/wp-content/themes/my-theme/{outDir}`).
 
 ---
 
 ### `input`
-*Type:* `string[]`
 
-*Default:* `[]`
+_Type:_ `string[]`
+
+_Default:_ `[]`
 
 List of input files relative to `srcDir` with glob options.
 
 ---
 
 ### `css`
-*Type:* `string`
 
-*Default:* `'pcss'`
+_Type:_ `string`
+
+_Default:_ `'pcss'`
 
 CSS extension used for uncompiled files.
 
 ---
 
 ### `manifest`
-*Type:* `boolean | string`
 
-*Default:* `false`
+_Type:_ `boolean | string`
+
+_Default:_ `false`
 
 Generate a manifest file. Accepts `true`, `false`, or a custom path (this will also add a hash to all compiled files).
 
 ---
 
 ### `preserveDirs`
-*Type:* `boolean`
 
-*Default:* `true`
+_Type:_ `boolean`
+
+_Default:_ `true`
 
 Preserve folder structure in the output. If set to `false`, all files are flattened into a single directory.
 
 ---
 
 ### `globals`
-*Type:* `object`
 
-*Default:* `{}`
+_Type:_ `object`
+
+_Default:_ `{}`
 
 Maps module names to global variables to mark them as external dependencies (in addition to preset globals).
 
 ---
 
 ### `alias`
-*Type:* `object`
 
-*Default:* `{}`
+_Type:_ `object`
+
+_Default:_ `{}`
 
 Define path aliases.
 
 ---
 
 ### `target`
-*Type:* `string | string[] | false`
 
-*Default:* `'es2017'`
+_Type:_ `string | string[] | false`
+
+_Default:_ `'es2017'`
 
 Esbuild target.
 
 ---
 
 ### `wrapper`
-*Type:* `boolean`
 
-*Default:* `true`
+_Type:_ `boolean`
+
+_Default:_ `true`
 
 Enable or disable code wrappers for JavaScript chunks.
 
 ---
 
 ### `banner`
-*Type:* `string | function`
 
-*Default:* `'(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {'`
+_Type:_ `string | function`
+
+_Default:_ `'(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {'`
 
 Code wrapper banner to prepend to output JS files.
 
 ---
 
 ### `footer`
-*Type:* `string | function`
 
-*Default:* `'})})();'`
+_Type:_ `string | function`
+
+_Default:_ `'})})();'`
 
 Code wrapper footer to append to output JS files.

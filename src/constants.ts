@@ -13,4 +13,5 @@ export const DEFAULT_OPTIONS = {
   banner: "(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {",
   footer: '})})();',
   css: 'pcss',
+  allowedJsExtensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
 };

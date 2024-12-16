@@ -57,7 +57,7 @@ describe('Test Config', () => {
   });
 
   it('async should output without commonJS dependency', () => {
-    const mainScript = path.join(buildDir, 'main.js');
+    const mainScript = path.join(buildDir, 'bundle', 'bundle.js');
 
     expect(fs.existsSync(mainScript)).toBe(true);
 

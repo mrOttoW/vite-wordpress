@@ -1,0 +1,55 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-create-block-example-interactivity {
+  box-sizing: border-box;
+  background-color: yellow;
+  color: #023a51;
+  border: 3px solid #023a51;
+  border-radius: 1.5rem;
+  text-align: center;
+  overflow: hidden;
+
+  .calculator {
+    padding: 3rem 2rem;
+
+    &-input {
+      margin: 1.25rem auto;
+      font-size: 1.75rem;
+      color: #023a51;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      &-form {
+        padding: 0.5rem 1rem;
+        margin-left: 0.5rem;
+        border: 2px solid #023a51;
+        border-radius: 1rem;
+        background-color: #fff;
+        font-size: 1.5rem;
+        color: #023a51;
+        max-width: 130px;
+      }
+    }
+    &-output {
+      display: none;
+
+      &.show {
+        display: block;
+      }
+
+      span {
+        color: #f2fcf6;
+        background: #0cab49;
+        font-weight: bold;
+        border-radius: 5px;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+  }
+}

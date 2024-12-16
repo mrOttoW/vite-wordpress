@@ -1,0 +1,38 @@
+:root {
+  --main-color: #3498db;
+  --secondary-color: #2ecc71;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: var(--main-color);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+
+  & > .header {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  & > .content {
+    display: flex;
+    gap: 20px;
+
+    & .card {
+      flex: 1;
+      padding: 15px;
+      background: var(--secondary-color);
+      color: white;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+}

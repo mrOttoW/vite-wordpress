@@ -19,6 +19,7 @@ import {
   OutputBundle,
   OutputOptions,
   PreRenderedAsset,
+  PreRenderedChunk,
   RollupOptions,
   EmittedAsset,
 } from 'rollup';
@@ -44,6 +45,7 @@ interface Options {
   banner?: string | AddonFunction;
   footer?: string | AddonFunction;
   css?: string;
+  allowedJsExtensions?: string[];
 }
 
 interface Asset {
@@ -60,13 +62,12 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
   /**
    * Construct input.
-   *
-   * @param rootPath
    */
   const getInput = async (rootPath: string): Promise<InputOption> => {
     const inputFiles = await fg(options.input, {
       cwd: path.join(rootPath, options.srcDir),
     });
+
     const entries = Object.fromEntries(
       inputFiles.map(file => {
         const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.[^/.]+$/, '');
@@ -95,8 +96,6 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
   /**
    * Construct Asset Output.
-   *
-   * @param chunkInfo
    */
   const getAssetFileName = (chunkInfo: PreRenderedAsset) => {
     const extension = options.manifest === false ? '[extname]' : '.[hash][extname]';
@@ -111,8 +110,6 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
   /**
    * Construct Vite's base.
-   *
-   * @param command
    */
   const getBase = (command: 'build' | 'serve'): string => {
     if (options.base !== '' && command === 'build') {
@@ -154,13 +151,17 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           plugins: [],
         };
         const esbuild: ESBuildOptions = {
-          loader: 'jsx',
-          include: /.*\.jsx?$/, // Allow React code within .js files instead of .jsx.
+          loader: 'tsx', // Set loader to handle TypeScript with JSX.
+          include: /.*\.(ts|tsx|jsx?)$/, // Include .ts, .tsx, .js, .jsx files
           exclude: [],
         };
         const optimizeDeps: DepOptimizationConfig = {
           esbuildOptions: {
-            loader: { '.js': 'jsx' }, // Need JSX syntax for dev server
+            loader: {
+              '.js': 'jsx', // JavaScript files treated as JSX (React).
+              '.ts': 'tsx', // TypeScript files treated as TypeScript (with JSX support if needed).
+              '.tsx': 'tsx', // Handle TypeScript React files (.tsx).
+            },
           },
           exclude: Object.keys(globals), // Prevent pre-transform of globals during dev server.
         };
@@ -185,6 +186,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           build,
           server,
           resolve: {
+            extensions: ['.ts', '.tsx', '.js', '.jsx'],
             alias: options.alias,
           },
         };
@@ -250,7 +252,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         }
 
         if (module.type === 'chunk' && module.facadeModuleId) {
-          const isJsChunk = ['.js', '.ts', '.tsx', '.jsx'].some(ext => module.facadeModuleId.endsWith(ext));
+          const isJsChunk = options.allowedJsExtensions.some(ext => module.facadeModuleId.endsWith(ext));
 
           // Include code wrappers if enabled.
           if (isJsChunk && options.wrapper) {
@@ -262,8 +264,6 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
     /**
      * Configure Server Hook.
-     *
-     * @param server
      */
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
