@@ -119,6 +119,18 @@ export default {
 };
 ```
 
+## Dev Server & HMR
+
+This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simplify adding the following into your plugin or theme.
+
+```php
+(new ViteWordPress\DevServer())->register();
+```
+
+Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` to automatically detect all enqueued scripts from the project through hooks and resolves these scripts to source files served by the development server. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
+
+You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
+ 
 ## Asset File & Cache busting
 
 Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
@@ -162,3 +174,4 @@ Example of registering and enqueueing the asset file based on the given example 
   wp_enqueue_script('my-custom-slider')
 
 ```
+
