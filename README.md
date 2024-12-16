@@ -60,6 +60,105 @@ export default {
 };
 ```
 
+See all options <a href="#options">here</a>.
+
+## Example Project Structure
+
+```
+project-root/
+├── src/
+│   ├── js
+│   │   └── main.js
+│   ├── css
+│   │   └── main.pcss
+│   └── blocks
+│       └── example-block
+│           ├─ style.pcss (imported into index.js)
+│           └─ index.js
+├── build/
+│   ├── js
+│   │   └── main.js
+│   ├── css
+│   │   └── main.css
+│   └── blocks
+│       └── example-block
+│           ├─ index.css
+│           └─ index.js
+├── vite.config.js
+└── package.json
+```
+
+Vite config for the given example.
+
+```javascript
+import { ViteWordPress } from 'vite-wordpress';
+
+export default {
+  plugins: [
+    ViteWordPress({
+      input: ['js/*.js', 'css/*.pcss', 'blocks/*/index.js'],
+    }),
+  ],
+};
+```
+
+## Dev Server & HMR
+
+This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simplify adding the following into your plugin or theme.
+
+```php
+(new ViteWordPress\DevServer())->register();
+```
+
+Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` to automatically detect all enqueued scripts from the project through hooks and resolves these scripts to source files served by the development server. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
+
+You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
+ 
+## Asset File & Cache busting
+
+Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
+
+Example project structure:
+
+```
+project-root/
+├── src/
+│    ├─ custom-slider.pcss (imported into custom-slider.js)
+│    └─ custom-slider.js
+├── build/
+│    ├─ custom-slider.css
+│    ├─ custom-slider.js
+│    └─ custom-slider.asset.php
+...
+```
+
+Example of registering and enqueueing the asset file based on the given example within a theme.
+
+```php
+
+  $asset_file = require get_stylesheet_directory() . 'build/custom-slider.asset.php';
+
+  wp_register_script(
+    'my-custom-slider',
+    get_stylesheet_directory_uri() . 'build/custom-slider.js',
+    $asset_file['dependencies'],
+    $asset_file['version'],
+  );
+
+  foreach ( $asset_file['assets'] as $css_handle => $css_path ) {
+    wp_register_style(
+      $css_handle,
+      get_stylesheet_directory_uri() . "build/{$css_path}",
+      [],
+      $asset_file['version']
+    );
+  }
+
+  wp_enqueue_script('my-custom-slider')
+
+```
+
+
 ## Options
 
 
@@ -177,100 +276,3 @@ Code wrapper banner to prepend to output JS files.
 *Default:* `'})})();'`
 
 Code wrapper footer to append to output JS files.
-
-## Example Project Structure
-
-```
-project-root/
-├── src/
-│   ├── js
-│   │   └── main.js
-│   ├── css
-│   │   └── main.pcss
-│   └── blocks
-│       └── example-block
-│           ├─ style.pcss (imported into index.js)
-│           └─ index.js
-├── build/
-│   ├── js
-│   │   └── main.js
-│   ├── css
-│   │   └── main.css
-│   └── blocks
-│       └── example-block
-│           ├─ index.css
-│           └─ index.js
-├── vite.config.js
-└── package.json
-```
-
-Vite config for the given example.
-
-```javascript
-import { ViteWordPress } from 'vite-wordpress';
-
-export default {
-  plugins: [
-    ViteWordPress({
-      input: ['js/*.js', 'css/*.pcss', 'blocks/*/index.js'],
-    }),
-  ],
-};
-```
-
-## Dev Server & HMR
-
-This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simplify adding the following into your plugin or theme.
-
-```php
-(new ViteWordPress\DevServer())->register();
-```
-
-Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` to automatically detect all enqueued scripts from the project through hooks and resolves these scripts to source files served by the development server. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
-
-You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
- 
-## Asset File & Cache busting
-
-Use https://github.com/mrOttoW/vite-php-asset-file to include a hash, manage dependencies identified in the code, and handle imported CSS assets.
-
-Example project structure:
-
-```
-project-root/
-├── src/
-│    ├─ custom-slider.pcss (imported into custom-slider.js)
-│    └─ custom-slider.js
-├── build/
-│    ├─ custom-slider.css
-│    ├─ custom-slider.js
-│    └─ custom-slider.asset.php
-...
-```
-
-Example of registering and enqueueing the asset file based on the given example within a theme.
-
-```php
-
-  $asset_file = require get_stylesheet_directory() . 'build/custom-slider.asset.php';
-
-  wp_register_script(
-    'my-custom-slider',
-    get_stylesheet_directory_uri() . 'build/custom-slider.js',
-    $asset_file['dependencies'],
-    $asset_file['version'],
-  );
-
-  foreach ( $asset_file['assets'] as $css_handle => $css_path ) {
-    wp_register_style(
-      $css_handle,
-      get_stylesheet_directory_uri() . "build/{$css_path}",
-      [],
-      $asset_file['version']
-    );
-  }
-
-  wp_enqueue_script('my-custom-slider')
-
-```
-
