@@ -4,6 +4,7 @@ import {
   BuildOptions,
   ConfigEnv,
   DepOptimizationConfig,
+  ResolvedConfig,
   ESBuildOptions,
   Plugin,
   ServerOptions,
@@ -59,6 +60,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   const assets = new Set<Asset>(); // Assets to emit.
   const interactivityMap = {}; // Entries that include interactivity API.
   let command: 'build' | 'serve'; // Vite command.
+  let externals: ExternalOption; // Resolved externals.
 
   /**
    * Construct input.
@@ -150,7 +152,6 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           ...PluginGlobals,
           ...options.globals,
         };
-        const external: ExternalOption = Object.keys(globals); // Set externals based on globals.
         const input: InputOption = await getInput(rootPath);
         const output: OutputOptions = {
           entryFileNames: options.manifest === false ? '[name].js' : '[name].[hash].js',
@@ -160,7 +161,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         const rollupOptions: RollupOptions = {
           input,
           output,
-          external,
+          external: Object.keys(globals), // Set externals based on globals.
           plugins: [],
         };
         const esbuild: ESBuildOptions = {
@@ -225,8 +226,92 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Config Resolved Hook.
      */
-    configResolved(config) {
+    configResolved(config: ResolvedConfig) {
+      externals = config.build.rollupOptions.external as string[];
       command = config.command;
+
+      /**
+       * # WP Interactivity Support in Vite Dev Server
+       *
+       * For blocks using the WP Interactivity API, view scripts are compiled as modules and will include
+       * imports such as "@wordpress/interactivity" in the compiled file. These imports will be resolved by
+       * WordPress on the server using its import map.
+       *
+       * When using Vite's Dev Server, it will throw an error through their internal "vite:import-analysis"
+       * plugin failing to resolve the import.
+       *
+       * eg: "[plugin:vite:import-analysis] Failed to resolve import '@wordpress/interactivity' from 'src/view.js'.
+       * Does the file exist?"
+       *
+       * Vite will also transform the code and prefix the import with the base and @id.
+       *
+       * We're going to push a late plugin to rewrite the 'vite:import-analysis' prefix.
+       * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
+       */
+      const VALID_ID_PREFIX = `${config.base}@id/`;
+      const importRegex = new RegExp(
+        `${VALID_ID_PREFIX}(${externals.join("|")})`,
+        "g"
+      );
+      if (config.plugins && Array.isArray(config.plugins)) {
+        config.plugins.push({
+          name: "vite-wordpress:ignore-static-import-replace-idprefix",
+          transform(code) {
+            if (importRegex.test(code)) {
+              const transformedCode = code.replace(importRegex, (m, s1) => s1);
+              const map = this.getCombinedSourcemap?.() || null;
+
+              return {code: transformedCode, map};
+            }
+
+            return null
+          },
+        });
+      }
+    },
+
+    /**
+     * ResolveID hook.
+     */
+    resolveId(id) {
+      /**
+       * # WP Interactivity Support in Vite Dev Server
+       *
+       * At this point the prefix has been rewritten with the late plugin.
+       * (eg: "base/@id/@wordpress/interactivity" to "@wordpress/interactivity");
+       *
+       * Now we need to make sure the import ID (eg: "@wordpress/interactivity")
+       * from our static imports are set as external before the 'vite:resolve' plugin
+       * transform it to 'node_modules/...' during dev server.
+       *
+       * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
+       */
+      if ((externals as string[]).includes(id)) {
+        return {id, external: true};
+      }
+    },
+
+
+    /**
+     * Load hook.
+     */
+    load(id) {
+      /**
+       * # WP Interactivity Support in Vite Dev Server
+       *
+       * At this point the problem is resolved, but we're still getting the errors in the
+       * console logs.
+       *
+       * eg: "Pre-transform error: Failed to load url @wordpress/interactivity
+       * (resolved id: @wordpress/interactivity) in .../view.js. Does the file exist?"
+       *
+       * This wil prevent console log errors during dev server when doing static import.
+       *
+       * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
+       */
+      if ((externals as string[]).includes(id)) {
+        return '';
+      }
     },
 
     /**
@@ -234,6 +319,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     buildStart() {
       if (command === 'build') {
+        // Emit assets.
         assets.forEach(asset => {
           const emittedAsset: EmittedAsset = {
             type: 'asset',
@@ -272,7 +358,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           const isJsChunk = options.allowedJsExtensions.some(ext => module.facadeModuleId.endsWith(ext));
           const isInteractivity = Object.values(interactivityMap).includes(module.facadeModuleId);
 
-          // Include code wrappers if enabled.
+          // Include code wrappers if enabled (skips for modules).
           if (isJsChunk && !isInteractivity && options.wrapper) {
             module.code = options.banner + module.code + options.footer;
           }
