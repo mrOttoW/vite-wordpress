@@ -113,13 +113,17 @@ Project examples (WordPress plugins) can be found here:
 
 ## Dev Server & HMR
 
-This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simply adding the following into your plugin or theme.
+This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to 
+integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simply adding 
+the following into your plugin or theme.
 
 ```php
 (new ViteWordPress\DevServer())->register();
 ```
 
-Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` to automatically detect all enqueued scripts from the project through hooks and resolves these scripts to source files served by the development server. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
+Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` 
+to automatically detect all enqueued scripts and template paths from the project through hooks and resolves these scripts & templates to source files served by the development 
+server or `srcDir` folder. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
 
 You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
 
