@@ -6,6 +6,7 @@
   <p>
 Providing an opinionated & "Go To" Vite configuration for building WordPress blocks & traditional WordPress development with WP Interactivity API support and HMR & Vite DevServer integration.
 </p>
+  <img alt="NPM Downloads" src="https://img.shields.io/npm/d18m/vite-wordpress">
   <img src="https://img.shields.io/github/v/release/mrOttoW/vite-wordpress" alt="GitHub release" />
   <img src="https://img.shields.io/npm/dependency-version/vite-wordpress/peer/vite" alt="npm peer dependency version" />
   <img alt="Node Current" src="https://img.shields.io/node/v/vite-wordpress">
@@ -113,7 +114,12 @@ Project examples (WordPress plugins) can be found here:
 
 ## Dev Server & HMR
 
-This NPM package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to 
+Install the `vite-wordpress-php` package. 
+   ```bash
+   composer require mrottow/vite-wordpress
+   ```
+
+This `vite-wordpress` package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to 
 integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simply adding 
 the following into your plugin or theme.
 
