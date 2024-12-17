@@ -10,8 +10,8 @@ export const DEFAULT_OPTIONS = {
   manifest: false,
   preserveDirs: true,
   wrapper: true,
-  banner: "(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {",
-  footer: '})})();',
+  banner: "document.addEventListener('DOMContentLoaded', () => {'use strict';",
+  footer: '});',
   css: 'pcss',
   allowedJsExtensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
 };

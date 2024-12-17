@@ -346,7 +346,11 @@ _Type:_ `string`
 
 _Default:_ `''`
 
+_Example:_ `'/wp-content/themes/my-theme'`
+
 Sets the base public path for generating URLs for assets in CSS/JS. If set, it will be appended with the `outDir` during the `build` command (e.g., `/wp-content/themes/my-theme/{outDir}`).
+
+This is also used to link source files to build files during development.
 
 ---
 
@@ -434,7 +438,7 @@ Enable or disable code wrappers for JavaScript chunks.
 
 _Type:_ `string | function`
 
-_Default:_ `'(() => {'use strict';document.addEventListener('DOMContentLoaded', () => {'`
+_Default:_ `document.addEventListener('DOMContentLoaded', () => {'use strict';`
 
 Code wrapper banner to prepend to output JS files.
 
@@ -444,6 +448,6 @@ Code wrapper banner to prepend to output JS files.
 
 _Type:_ `string | function`
 
-_Default:_ `'})})();'`
+_Default:_ `});`
 
 Code wrapper footer to append to output JS files.
