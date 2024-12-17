@@ -4,15 +4,16 @@ import {
   BuildOptions,
   ConfigEnv,
   DepOptimizationConfig,
-  ResolvedConfig,
   ESBuildOptions,
   Plugin,
+  ResolvedConfig,
   ServerOptions,
   UserConfig,
   ViteDevServer,
 } from 'vite';
 import {
   AddonFunction,
+  EmittedAsset,
   ExternalOption,
   GlobalsOption,
   InputOption,
@@ -21,9 +22,9 @@ import {
   OutputOptions,
   PreRenderedAsset,
   RollupOptions,
-  EmittedAsset,
 } from 'rollup';
-import { createBundleMap, resolveHashedBlockFilePaths, checkForInteractivity } from './utils';
+import { IncomingMessage, ServerResponse } from 'node:http';
+import { checkForInteractivity, createBundleMap, resolveHashedBlockFilePaths } from './utils';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
@@ -61,15 +62,21 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   const interactivityMap = {}; // Entries that include interactivity API.
   let command: 'build' | 'serve'; // Vite command.
   let externals: ExternalOption; // Resolved externals.
+  let rootPath: string; // Root path to the project.
+
+  /**
+   * Construct input files.
+   */
+  const getInputFiles = async () =>
+    await fg(options.input, {
+      cwd: path.join(rootPath, options.srcDir),
+    });
 
   /**
    * Construct input.
    */
   const getInput = async (rootPath: string): Promise<InputOption> => {
-    const inputFiles = await fg(options.input, {
-      cwd: path.join(rootPath, options.srcDir),
-    });
-
+    const inputFiles = await getInputFiles();
     const entries = Object.fromEntries(
       inputFiles.map(file => {
         const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.[^/.]+$/, '');
@@ -146,7 +153,8 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
-        const rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
+        rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
+
         const base: string = getBase(command);
         const globals: GlobalsOption = {
           ...PluginGlobals,
@@ -185,7 +193,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           target: options.target,
           minify: mode === 'development' ? false : 'esbuild',
           sourcemap: mode === 'development' || command === 'serve' ? 'inline' : false,
-          assetsInlineLimit: 0, //Make sure to not include inline assets in CSS.
+          assetsInlineLimit: 0, // Make sure to not include inline assets in CSS.
           assetsDir: '', // In traditional WP, the src directory is primarily used for resources, so assets directory is unnecessary.
           rollupOptions,
         };
@@ -228,6 +236,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     configResolved(config: ResolvedConfig) {
       externals = config.build.rollupOptions.external as string[];
+      rootPath = config.root ? config.root : process.cwd();
       command = config.command;
 
       /**
@@ -315,7 +324,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      */
     buildStart() {
       if (command === 'build') {
-        // Emit assets.
+        // Emit all our assets.
         assets.forEach(asset => {
           const emittedAsset: EmittedAsset = {
             type: 'asset',
@@ -366,12 +375,36 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      * Configure Server Hook.
      */
     configureServer(server: ViteDevServer) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url && req.url.includes(`${VITE_PLUGIN_NAME}.json`)) {
-          const { base, srcDir, outDir, css, manifest } = options;
+      const indexUrls = [
+        '/index.html',
+        path.join(server.config.base, 'index.html'),
+        server.config.base.replace(/\/$/, ''),
+        server.config.base,
+      ];
+      const getProtocol = (req: IncomingMessage) => {
+        if (req.headers['x-forwarded-proto']) {
+          return (req.headers['x-forwarded-proto'] as string).split(',')[0];
+        }
+        return req.socket && 'encrypted' in req.socket ? 'https' : 'http';
+      };
+
+      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
+        const publicDir = path.basename(__dirname) === 'src' ? path.join(__dirname, '..', 'public') : __dirname;
+        const { base, srcDir, outDir, css, manifest } = options;
+        const localUrl = `${getProtocol(req)}://${req.headers.host}`;
+
+        if (req.url && req.url === `/${VITE_PLUGIN_NAME}.json`) {
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 200;
           res.end(JSON.stringify({ base, srcDir, outDir, css, manifest }, null, 2)); // Expose plugin config.
+        } else if (req.url && indexUrls.includes(req.url)) {
+          res.statusCode = 404;
+          res.end(
+            fs
+              .readFileSync(path.join(publicDir, 'dev-server-index.html'))
+              .toString()
+              .replace(/{{ CONFIG_URL }}/g, `${localUrl}/${VITE_PLUGIN_NAME}.json`)
+          );
         } else {
           next();
         }

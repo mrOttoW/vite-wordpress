@@ -21,7 +21,7 @@ Providing an opinionated & "Go To" Vite configuration for building WordPress blo
 - Complete Vite development server & HMR (Hot Module Replacement) integration.
 - JSX/React code supported in `.js` files instead of using `.jsx`.
 - Support for WP Interactivity API blocks.
-  - Scripts with `@wordpress/interactivity` imports will be compiled as modules. 
+  - Scripts with `@wordpress/interactivity` imports will be compiled as modules.
   - The Vite development server will enable HMR for WP Interactivity API blocks.
 - Automatically externalizes WordPress globals like `wp` and libraries like `React` to reduce bundle sizes.
   - Includes a preset of globals for wp dependencies and other common libraries in WordPress like react, react-dom, jquery, lodash etc.. (see src/globals.ts) with option to add additional globals.
@@ -109,26 +109,28 @@ export default {
 ```
 
 Project examples (WordPress plugins) can be found here:
+
 - Dynamic block: https://github.com/mrOttoW/vite-wordpress-plugin-block-example
 - WP Interactivity API block: https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
 ## Dev Server & HMR
 
-Install the `vite-wordpress-php` package. 
-   ```bash
-   composer require mrottow/vite-wordpress
-   ```
+Install the `vite-wordpress-php` composer package.
 
-This `vite-wordpress` package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to 
-integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simply adding 
+```bash
+composer require mrottow/vite-wordpress
+```
+
+The `vite-wordpress` node package can be used in hand with the <a href="https://github.com/mrOttoW/vite-wordpress-php">vite-wordpress-php</a> composer package to
+integrate Vite's development server and HMR into WordPress, as well as manage the manifest file (if enabled), which can be used by simply adding
 the following into your plugin or theme.
 
 ```php
 (new ViteWordPress\DevServer())->register();
 ```
 
-Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php` 
-to automatically detect all enqueued scripts and template paths from the project through hooks and resolves these scripts & templates to source files served by the development 
+Aside to the integration, `vite-wordpress` exposes the plugin's configurations on the development server which is used by `vite-wordpress-php`
+to automatically detect all enqueued scripts and template paths from the project through hooks and resolves these scripts & templates to source files served by the development
 server or `srcDir` folder. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
 
 It's compatible with a traditional setup with `vite-wordpress` without the need for a manifest or hashed files but also works well with a manifest.
@@ -261,19 +263,21 @@ https://github.com/mrOttoW/vite-php-manifest
 
 ## WP Interactivity API
 
-`vite-wordpress` also provides out-of-the-box support for development with the 
-<a href="https://developer.wordpress.org/block-editor/reference-guides/interactivity-api/" target="_blank">WP Interactivity API</a>. 
+`vite-wordpress` also provides out-of-the-box support for development with the
+<a href="https://developer.wordpress.org/block-editor/reference-guides/interactivity-api/" target="_blank">WP Interactivity API</a>.
 Any scripts that import `@wordpress/interactivity` (e.g., view scripts) will be compiled as modules, allowing them to
 be resolved by the <a href="https://make.wordpress.org/core/2023/11/21/exploration-to-support-modules-and-import-maps/" target="_blank">WordPress import map</a>.
 
 Additionally, `vite-wordpress` ensures that the development server ignores these static imports, allowing them to be resolved by WordPress rather than by Vite.
-This will prevent errors from Vite's internal `vite:import-analysis` plugin failing the resolve import. 
+This will prevent errors from Vite's internal `vite:import-analysis` plugin failing the resolve import.
 
 A project example (WordPress plugin) can be found here:
 https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
 ## Asset Callers
+
 Let's say you have the following project:
+
 ```
 project-root/
 ├── classes/
@@ -304,6 +308,7 @@ project-root/
 ```
 
 And you have various PHP functions that retrieve asset files from the `assets` folder, used across different template files or classes like:
+
 ```php
 <?php
   echo Helpers::get_image('logo.png');
@@ -314,7 +319,6 @@ And you have various PHP functions that retrieve asset files from the `assets` f
 You can use the following plugin to identify and emit assets referenced in PHP functions or callers during the build process. This ensures that Vite compiles only the assets used throughout the project:
 
 https://github.com/mrOttoW/vite-php-asset-callers
-
 
 The plugin parses PHP code to locate embedded assets, such as image files, SVGs, fonts, or other resources. It then processes and emits these assets for compilation in the final bundle.
 

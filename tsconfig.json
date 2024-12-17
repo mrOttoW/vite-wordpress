@@ -12,5 +12,5 @@
     "lib": ["ESNext"],
     "skipLibCheck": true
   },
-  "include": ["src/index.ts", "playground/src/**/*.ts"]
+  "include": ["src/index.ts"]
 }

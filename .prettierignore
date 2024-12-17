@@ -7,3 +7,4 @@ tar
 pnpm-lock.yaml
 renovate.json5
 yarn.lock
+public/dev-server-index.html

@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
-// @ts-expect-error json
-import pkg from './package.json';
 
 export default defineConfig({
   plugins: [
@@ -17,13 +15,13 @@ export default defineConfig({
     reportCompressedSize: true,
     emptyOutDir: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(__dirname, 'src', 'index.ts'),
       name: 'ViteWordpress',
       formats: ['es', 'cjs'],
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['fs', 'path', 'crypto', ...Object.keys(pkg.dependencies)],
+      external: ['fs', 'path', 'crypto', 'HttpsServer', 'deepmerge', 'fast-glob', 'rollup-plugin-external-globals'],
     },
   },
 });
