@@ -125,6 +125,8 @@ Aside to the integration, `vite-wordpress` exposes the plugin's configurations o
 to automatically detect all enqueued scripts and template paths from the project through hooks and resolves these scripts & templates to source files served by the development 
 server or `srcDir` folder. It updates script tags from these specific scripts to use as modules and injects Vite's client to enable HMR (Hot Module Replacement).
 
+It's compatible with a traditional setup with `vite-wordpress` without the need for a manifest or hashed files but also works well with a manifest.
+
 You can read more about this on the <a href="https://github.com/mrOttoW/vite-wordpress-php#readme">repository's README</a> page.
 
 ## Asset File & Cache busting
