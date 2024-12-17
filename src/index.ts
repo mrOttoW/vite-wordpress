@@ -1,4 +1,4 @@
-import {DEFAULT_OPTIONS, VITE_PLUGIN_NAME} from './constants';
+import { DEFAULT_OPTIONS, VITE_PLUGIN_NAME } from './constants';
 import {
   AliasOptions,
   BuildOptions,
@@ -23,15 +23,15 @@ import {
   PreRenderedAsset,
   RollupOptions,
 } from 'rollup';
-import {IncomingMessage, ServerResponse} from 'node:http';
-import {checkForInteractivity, createBundleMap, resolveHashedBlockFilePaths} from './utils';
+import { IncomingMessage, ServerResponse } from 'node:http';
+import { checkForInteractivity, createBundleMap, resolveHashedBlockFilePaths } from './utils';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 import PluginGlobals from './globals';
 import path from 'path';
 import externalGlobals from 'rollup-plugin-external-globals';
 import fs from 'fs';
-import {fileURLToPath} from 'url'
+import { fileURLToPath } from 'url';
 
 interface Options {
   outDir?: string;
@@ -69,8 +69,8 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
    * The directory of the current file.
    */
   const getDirname = (): string => {
-    return path.dirname(fileURLToPath(import.meta.url))
-  }
+    return path.dirname(fileURLToPath(import.meta.url));
+  };
 
   /**
    * Construct input files.
@@ -159,7 +159,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Preconfigure Config.
      */
-    config: (userConfig: UserConfig, {command, mode}: ConfigEnv): Promise<UserConfig> =>
+    config: (userConfig: UserConfig, { command, mode }: ConfigEnv): Promise<UserConfig> =>
       (async (): Promise<UserConfig> => {
         rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
 
@@ -275,7 +275,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
               const transformedCode = code.replace(importRegex, (m, s1) => s1);
               const map = this.getCombinedSourcemap?.() || null;
 
-              return {code: transformedCode, map};
+              return { code: transformedCode, map };
             }
 
             return null;
@@ -301,7 +301,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
        * Inspired by {@url https://github.com/vitejs/vite/issues/6393#issuecomment-1006819717}
        */
       if ((externals as string[]).includes(id)) {
-        return {id, external: true};
+        return { id, external: true };
       }
     },
 
@@ -398,13 +398,13 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
         const publicDir = path.basename(getDirname()) === 'src' ? path.join(getDirname(), '..', 'public') : getDirname();
-        const {base, srcDir, outDir, css, manifest} = options;
+        const { base, srcDir, outDir, css, manifest } = options;
         const localUrl = `${getProtocol(req)}://${req.headers.host}`;
 
         if (req.url && req.url === `/${VITE_PLUGIN_NAME}.json`) {
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 200;
-          res.end(JSON.stringify({base, srcDir, outDir, css, manifest}, null, 2)); // Expose plugin config.
+          res.end(JSON.stringify({ base, srcDir, outDir, css, manifest }, null, 2)); // Expose plugin config.
         } else if (req.url && indexUrls.includes(req.url)) {
           res.statusCode = 404;
           res.end(
@@ -422,12 +422,12 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     /**
      * Handle hot update for PHP files.
      */
-    handleHotUpdate({file, server}) {
+    handleHotUpdate({ file, server }) {
       if (file.endsWith('.php')) {
-        server.ws.send({type: 'full-reload', path: '*'});
+        server.ws.send({ type: 'full-reload', path: '*' });
       }
     },
   };
 }
 
-export {ViteWordPress};
+export { ViteWordPress };
