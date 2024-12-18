@@ -380,10 +380,6 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       }
     },
 
-    closeBundle() {
-
-    },
-
     /**
      * Configure Server Hook.
      */
