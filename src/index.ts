@@ -74,9 +74,9 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   };
 
   /**
-   * Get globed input files.
+   * Globed input files.
    */
-  const getInputFiles = async () =>
+  const inputFiles = async () =>
     await fg(options.input, {
       cwd: path.join(rootPath, options.srcDir),
     });
@@ -98,10 +98,10 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
    * Resolve input.
    */
   const resolveInput = async (rootPath: string): Promise<InputOption> => {
-    const inputFiles = await getInputFiles();
+    const files = await inputFiles();
     const entries = Object.fromEntries(
-      inputFiles.map(file => {
-        const fileName = (options.preserveDirs ? file : path.basename(file)).replace(/\.[^/.]+$/, '');
+      files.map(file => {
+        const fileName = file.replace(/\.[^/.]+$/, '');
         const filePath = path.join(rootPath, options.srcDir, file);
 
         return [fileName, filePath];
@@ -111,6 +111,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     Object.entries(entries).forEach(([fileName, filePath]) => {
       // Ensure JSON files are emitted as assets (block.json).
       if (filePath.endsWith('.json')) {
+        fileName = options.preserveDirs ? fileName : path.basename(fileName)
         addAsset(fileName.endsWith('.json') ? fileName : `${fileName}.json`, filePath);
         delete entries[fileName];
       }
@@ -122,7 +123,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       }
     });
 
-    return entries;
+    return options.preserveDirs ? entries : Object.values(entries);
   };
 
   /**

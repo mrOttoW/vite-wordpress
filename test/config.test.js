@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-describe('Test Config', () => {
+describe('Test Config with General Configurations', () => {
   const rootDir = path.resolve(__dirname, '../'); // Root directory of the project
   const buildDir = path.join(rootDir, 'playground', 'build'); // Build output directory
   const isDist = process.env.NODE_ENV === 'dist';
