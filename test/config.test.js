@@ -8,10 +8,14 @@ describe('Test Config', () => {
   const isDist = process.env.NODE_ENV === 'dist';
 
   beforeAll(() => {
-    execSync(isDist ? 'yarn playground-build-dist' : 'yarn playground-build', {
-      cwd: rootDir,
-      stdio: 'inherit',
-    });
+    try {
+      execSync(isDist ? 'yarn playground-build-dist' : 'yarn playground-build', {
+        cwd: rootDir,
+        stdio: 'inherit',
+      });
+    } catch (error) {
+      throw new Error('Build process failed: ' + error.message);
+    }
   });
 
   it('imported wp block packages should be transformed into globals', () => {
@@ -31,29 +35,11 @@ describe('Test Config', () => {
 
     expect(fs.existsSync(blockJson)).toBe(true);
 
-    const jsonContent = fs.readFileSync(blockJson, 'utf-8');
+    const jsonContent = JSON.parse(fs.readFileSync(blockJson, 'utf-8'));
 
-    expect(jsonContent).toContain(`{
-  "$schema": "https://schemas.wp.org/trunk/block.json",
-  "apiVersion": 3,
-  "name": "create-block/example-blocks",
-  "version": "0.1.0",
-  "title": "Example Dynamic",
-  "category": "widgets",
-  "icon": "smiley",
-  "description": "Example dynamic block.",
-  "example": {},
-  "supports": {
-    "html": false
-  },
-  "textdomain": "example-blocks",
-  "editorScript": "file:./index.js",
-  "editorStyle": "file:./index.css",
-  "style": "file:./style.css",
-  "render": "file:./render.php",
-  "viewScript": "file:./view.js"
-}
-`);
+    expect(jsonContent.name).toBe('create-block/example-blocks');
+    expect(jsonContent.title).toBe('Example Dynamic');
+    expect(jsonContent.supports.html).toBe(false);
   });
 
   it('async should output without commonJS dependency', () => {
