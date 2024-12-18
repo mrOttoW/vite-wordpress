@@ -25,13 +25,14 @@ import {
 } from 'rollup';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { checkForInteractivity, createBundleMap, resolveHashedBlockFilePaths } from './utils';
-import deepmerge from 'deepmerge';
-import fg from 'fast-glob';
+import { fileURLToPath } from 'url';
+import externalGlobals from 'rollup-plugin-external-globals';
 import PluginGlobals from './globals';
 import path from 'path';
-import externalGlobals from 'rollup-plugin-external-globals';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
+import deepmerge from 'deepmerge';
+import fg from 'fast-glob';
+
 
 interface Options {
   outDir?: string;
@@ -68,12 +69,12 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   /**
    * The directory of the current file.
    */
-  const getDirname = (): string => {
+  const dirname = (): string => {
     return path.dirname(fileURLToPath(import.meta.url));
   };
 
   /**
-   * Construct input files.
+   * Get globed input files.
    */
   const getInputFiles = async () =>
     await fg(options.input, {
@@ -81,9 +82,22 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     });
 
   /**
-   * Construct input.
+   * Add asset to emit.
    */
-  const getInput = async (rootPath: string): Promise<InputOption> => {
+  const addAsset = (fileName: string, filePath: string) => {
+    assets.add({
+      name: path.basename(fileName),
+      fileName,
+      originalFileName: path.join(options.srcDir, fileName),
+      filePath: filePath,
+    });
+    return true;
+  };
+
+  /**
+   * Resolve input.
+   */
+  const resolveInput = async (rootPath: string): Promise<InputOption> => {
     const inputFiles = await getInputFiles();
     const entries = Object.fromEntries(
       inputFiles.map(file => {
@@ -112,9 +126,9 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   };
 
   /**
-   * Construct Asset Output.
+   * Resolve Asset Output.
    */
-  const getAssetFileName = (chunkInfo: PreRenderedAsset) => {
+  const resolveAssetFileName = (chunkInfo: PreRenderedAsset) => {
     const extension = options.manifest === false ? '[extname]' : '.[hash][extname]';
 
     if (options.preserveDirs && chunkInfo.originalFileNames[0]) {
@@ -126,27 +140,14 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   };
 
   /**
-   * Construct Vite's base.
+   * Resolve Vite's base.
    */
-  const getBase = (command: 'build' | 'serve'): string => {
+  const resolveBase = (command: 'build' | 'serve'): string => {
     if (options.base !== '' && command === 'build') {
       return path.join(options.base, options.outDir);
     }
 
     return options.base;
-  };
-
-  /**
-   * Add asset to emit.
-   */
-  const addAsset = (fileName: string, filePath: string) => {
-    assets.add({
-      name: path.basename(fileName),
-      fileName,
-      originalFileName: path.join(options.srcDir, fileName),
-      filePath: filePath,
-    });
-    return true;
   };
 
   /**
@@ -163,15 +164,15 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       (async (): Promise<UserConfig> => {
         rootPath = userConfig.root ? path.join(process.cwd(), userConfig.root) : process.cwd();
 
-        const base: string = getBase(command);
+        const base: string = resolveBase(command);
         const globals: GlobalsOption = {
           ...PluginGlobals,
           ...options.globals,
         };
-        const input: InputOption = await getInput(rootPath);
+        const input: InputOption = await resolveInput(rootPath);
         const output: OutputOptions = {
           entryFileNames: options.manifest === false ? '[name].js' : '[name].[hash].js',
-          assetFileNames: (chunkInfo: PreRenderedAsset) => getAssetFileName(chunkInfo),
+          assetFileNames: (chunkInfo: PreRenderedAsset) => resolveAssetFileName(chunkInfo),
           globals: Object.fromEntries(Object.entries(globals).map(([key, value]) => [key.replace('@wordpress/', 'wp-'), value])),
         };
         const rollupOptions: RollupOptions = {
@@ -379,10 +380,16 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
       }
     },
 
+    closeBundle() {
+
+    },
+
     /**
      * Configure Server Hook.
      */
     configureServer(server: ViteDevServer) {
+      const publicDir = path.basename(dirname()) === 'src' ? path.join(dirname(), '..', 'public') : dirname();
+      const { base, srcDir, outDir, css, manifest } = options;
       const indexUrls = [
         '/index.html',
         path.join(server.config.base, 'index.html'),
@@ -395,10 +402,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         }
         return req.socket && 'encrypted' in req.socket ? 'https' : 'http';
       };
-
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
-        const publicDir = path.basename(getDirname()) === 'src' ? path.join(getDirname(), '..', 'public') : getDirname();
-        const { base, srcDir, outDir, css, manifest } = options;
         const localUrl = `${getProtocol(req)}://${req.headers.host}`;
 
         if (req.url && req.url === `/${VITE_PLUGIN_NAME}.json`) {
