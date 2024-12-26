@@ -114,6 +114,7 @@ Project examples (WordPress plugins) can be found here:
 - WP Interactivity API block: https://github.com/mrOttoW/vite-wordpress-plugin-interactivity-block-example
 
 ## Dev Server & HMR
+
 <img hspace="10" src="https://raw.githubusercontent.com/mrOttoW/vite-wordpress/refs/heads/main/vite-hmr.gif" alt="vite hmr" style="border-radius: 10px;" />
 
 Install the `vite-wordpress-php` composer package.

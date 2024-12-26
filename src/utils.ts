@@ -1,48 +1,21 @@
 import path from 'path';
 import fs from 'fs';
-import { NormalizedOutputOptions, OutputBundle, OutputChunk } from 'rollup';
+import { NormalizedOutputOptions } from 'rollup';
+import { ManifestChunk } from 'vite';
 
-export function camelToKebab(str: string): string {
+export const camelToKebab = (str: string): string => {
   return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-}
+};
 
-export function createBundleMap(bundleOptions: NormalizedOutputOptions, bundle: OutputBundle, bundleMap: Record<string, string> = {}) {
-  // For each build file find the fileName with hash.
-  for (const module of Object.values(bundle)) {
-    if (module.type !== 'chunk' || !('facadeModuleId' in module)) {
-      continue;
-    }
-
-    const chunk = module as OutputChunk;
-    const hasImportedCss = chunk.viteMetadata?.importedCss?.size > 0;
-    const hasImportedAssets = chunk.viteMetadata?.importedAssets?.size > 0;
-    const bundleName = path.join(bundleOptions.dir, chunk.name);
-
-    // Handle PHP file mapping
-    if (chunk.facadeModuleId.endsWith('.php') && !bundleMap[`${bundleName}.php`] && hasImportedAssets) {
-      bundleMap[`${bundleName}.php`] = chunk.viteMetadata.importedAssets.values().next().value;
-      continue;
-    }
-
-    // Handle JS file mapping
-    if (!bundleMap[`${bundleName}.js`]) {
-      bundleMap[`${bundleName}.js`] = chunk.fileName;
-
-      // Handle CSS file mapping if CSS is imported
-      if (hasImportedCss && !bundleMap[`${bundleName}.css`]) {
-        const importedCss = chunk.viteMetadata.importedCss as Set<string>;
-        bundleMap[`${bundleName}.css`] = importedCss.values().next().value;
-      }
-    }
-  }
-
-  return bundleMap;
-}
+export const getFileExtension = (filePath: string): string => {
+  const lastDotIndex = filePath.lastIndexOf('.');
+  return lastDotIndex !== -1 ? filePath.slice(lastDotIndex + 1) : '';
+};
 
 export const resolveHashedBlockFilePaths = (
   jsonFileName: string,
   jsonObject: Record<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-  bundleMap: Record<string, string> = {},
+  buildFileMap: Record<string, ManifestChunk> = {},
   bundleOptions: NormalizedOutputOptions
 ) => {
   const filePath = path.join(bundleOptions.dir, jsonFileName);
@@ -52,15 +25,18 @@ export const resolveHashedBlockFilePaths = (
     if (typeof jsonObject[key] === 'string' && jsonObject[key].startsWith('file:')) {
       const relativePath = jsonObject[key].slice(5); // Remove "file:" prefix
       const absolutePath = path.resolve(baseDir, relativePath);
+      const extension = getFileExtension(relativePath);
+      const mappedFile = Object.values(buildFileMap).find(chunk => {
+        return path.join(bundleOptions.dir, `${chunk.name}.${extension}`) === absolutePath;
+      });
 
-      if (bundleMap[absolutePath]) {
-        jsonObject[key] = `file:./${path.basename(bundleMap[absolutePath])}`;
+      if (mappedFile) {
+        jsonObject[key] = `file:./${path.basename(mappedFile['file'])}`;
       }
     } else if (typeof jsonObject[key] === 'object' && jsonObject[key] !== null) {
-      resolveHashedBlockFilePaths(filePath, jsonObject[key], bundleMap, bundleOptions);
+      resolveHashedBlockFilePaths(filePath, jsonObject[key], buildFileMap, bundleOptions);
     }
   }
-
   return jsonObject;
 };
 

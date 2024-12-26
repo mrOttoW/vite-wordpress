@@ -5,6 +5,7 @@ import {
   ConfigEnv,
   DepOptimizationConfig,
   ESBuildOptions,
+  ManifestChunk,
   Plugin,
   ResolvedConfig,
   ServerOptions,
@@ -19,12 +20,13 @@ import {
   InputOption,
   NormalizedOutputOptions,
   OutputBundle,
+  OutputChunk,
   OutputOptions,
   PreRenderedAsset,
   RollupOptions,
 } from 'rollup';
 import { IncomingMessage, ServerResponse } from 'node:http';
-import { checkForInteractivity, createBundleMap, resolveHashedBlockFilePaths } from './utils';
+import { checkForInteractivity, resolveHashedBlockFilePaths } from './utils';
 import { fileURLToPath } from 'url';
 import externalGlobals from 'rollup-plugin-external-globals';
 import PluginGlobals from './globals';
@@ -32,7 +34,6 @@ import path from 'path';
 import fs from 'fs';
 import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
-
 
 interface Options {
   outDir?: string;
@@ -59,11 +60,13 @@ interface Asset {
 }
 
 function ViteWordPress(optionsParam: Options = {}): Plugin {
+  const cacheDir = path.join(process.cwd(), 'node_modules/.vite/vite-wordpress');
+  const buildCache = path.join(cacheDir, 'build.json');
   const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
   const assets = new Set<Asset>(); // Assets to emit.
   const interactivityMap = {}; // Entries that include interactivity API.
-  let command: 'build' | 'serve'; // Vite command.
   let externals: ExternalOption; // Resolved externals.
+  let rootConfig: ResolvedConfig;
   let rootPath: string; // Root path to the project.
 
   /**
@@ -111,7 +114,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     Object.entries(entries).forEach(([fileName, filePath]) => {
       // Ensure JSON files are emitted as assets (block.json).
       if (filePath.endsWith('.json')) {
-        fileName = options.preserveDirs ? fileName : path.basename(fileName)
+        fileName = options.preserveDirs ? fileName : path.basename(fileName);
         addAsset(fileName.endsWith('.json') ? fileName : `${fileName}.json`, filePath);
         delete entries[fileName];
       }
@@ -149,6 +152,40 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     }
 
     return options.base;
+  };
+
+  /**
+   * Build manifest like file map.
+   */
+  const createFileMap = (bundle: OutputBundle, buildFileMap: Record<string, ManifestChunk> = {}) => {
+    for (const module of Object.values(bundle)) {
+      if (module.type !== 'chunk' || !('facadeModuleId' in module)) continue;
+
+      const chunk = module as OutputChunk;
+      const { facadeModuleId, fileName, viteMetadata, name } = chunk;
+      const { importedCss = new Set<string>(), importedAssets = new Set<string>() } = viteMetadata || {};
+      const src = facadeModuleId.replace(`${rootConfig.root}/`, '');
+
+      const addToMap = (file: string) => {
+        if (!buildFileMap[file]) {
+          buildFileMap[file] = { src, name, file };
+        }
+      };
+
+      if (facadeModuleId.endsWith('.php') && importedAssets.size) {
+        addToMap(Array.from(importedAssets)[0]);
+        continue;
+      }
+
+      if (!facadeModuleId.endsWith(`.${options.css}`)) {
+        addToMap(fileName);
+      }
+
+      if (importedCss.size) {
+        addToMap(Array.from(importedCss)[0]);
+      }
+    }
+    return buildFileMap;
   };
 
   /**
@@ -247,7 +284,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
     configResolved(config: ResolvedConfig) {
       externals = config.build.rollupOptions.external as string[];
       rootPath = config.root ? config.root : process.cwd();
-      command = config.command;
+      rootConfig = config;
 
       /**
        * # WP Interactivity Support in Vite Dev Server
@@ -333,7 +370,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      * Build Start Hook.
      */
     buildStart() {
-      if (command === 'build') {
+      if (rootConfig.command === 'build') {
         // Emit all our assets.
         assets.forEach(asset => {
           const emittedAsset: EmittedAsset = {
@@ -358,15 +395,16 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
      * Generate Bundle Hook.
      */
     async generateBundle(bundleOptions: NormalizedOutputOptions, bundle: OutputBundle) {
-      const bundleMap = createBundleMap(bundleOptions, bundle);
+      const buildFileMap = createFileMap(bundle);
 
       for (const module of Object.values(bundle)) {
         if (module.type === 'asset' && module.fileName.endsWith('.json') && options.manifest !== false) {
           const jsonFileName = module.fileName;
           const jsonObject = JSON.parse(module.source.toString());
+          const jsonResolved = resolveHashedBlockFilePaths(jsonFileName, jsonObject, buildFileMap, bundleOptions);
 
           // Ensure file paths in block.json use hashed file names.
-          module.source = JSON.stringify(resolveHashedBlockFilePaths(jsonFileName, jsonObject, bundleMap, bundleOptions), null, 2);
+          module.source = JSON.stringify(jsonResolved, null, 2);
         }
 
         if (module.type === 'chunk' && module.facadeModuleId) {
@@ -379,6 +417,11 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           }
         }
       }
+
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      fs.writeFileSync(buildCache, JSON.stringify(buildFileMap, null, 2));
     },
 
     /**
@@ -399,13 +442,19 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
         }
         return req.socket && 'encrypted' in req.socket ? 'https' : 'http';
       };
+
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next) => {
         const localUrl = `${getProtocol(req)}://${req.headers.host}`;
 
         if (req.url && req.url === `/${VITE_PLUGIN_NAME}.json`) {
+          const exposed = { base, srcDir, outDir, css, manifest, buildMap: {} };
+          if (fs.existsSync(buildCache)) {
+            const buildMap = fs.readFileSync(buildCache, 'utf8');
+            exposed.buildMap = JSON.parse(buildMap);
+          }
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 200;
-          res.end(JSON.stringify({ base, srcDir, outDir, css, manifest }, null, 2)); // Expose plugin config.
+          res.end(JSON.stringify(exposed, null, 2)); // Expose plugin config.
         } else if (req.url && indexUrls.includes(req.url)) {
           res.statusCode = 404;
           res.end(
