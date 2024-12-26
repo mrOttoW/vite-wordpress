@@ -26,13 +26,12 @@ import {
   RollupOptions,
 } from 'rollup';
 import { IncomingMessage, ServerResponse } from 'node:http';
-import { checkForInteractivity, resolveHashedBlockFilePaths } from './utils';
+import { checkForInteractivity, resolveHashedBlockFilePaths, merge } from './utils';
 import { fileURLToPath } from 'url';
 import externalGlobals from 'rollup-plugin-external-globals';
 import PluginGlobals from './globals';
 import path from 'path';
 import fs from 'fs';
-import deepmerge from 'deepmerge';
 import fg from 'fast-glob';
 
 interface Options {
@@ -62,7 +61,7 @@ interface Asset {
 function ViteWordPress(optionsParam: Options = {}): Plugin {
   const cacheDir = path.join(process.cwd(), 'node_modules/.vite/vite-wordpress');
   const buildCache = path.join(cacheDir, 'build.json');
-  const options: Options = deepmerge(DEFAULT_OPTIONS, optionsParam);
+  const options: Options = merge(DEFAULT_OPTIONS, optionsParam);
   const assets = new Set<Asset>(); // Assets to emit.
   const interactivityMap = {}; // Entries that include interactivity API.
   let externals: ExternalOption; // Resolved externals.
@@ -260,7 +259,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
           },
         };
 
-        userConfig = deepmerge(preConfig, userConfig);
+        userConfig = merge(preConfig, userConfig);
 
         const rollupPlugins = [
           externalGlobals(globals, {

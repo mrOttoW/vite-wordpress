@@ -21,7 +21,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['url', 'fs', 'path', 'crypto', 'HttpsServer', 'deepmerge', 'fast-glob', 'rollup-plugin-external-globals'],
+      external: ['url', 'fs', 'path', 'crypto', 'HttpsServer', 'fast-glob', 'rollup-plugin-external-globals'],
     },
   },
 });
