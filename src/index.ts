@@ -67,7 +67,7 @@ function ViteWordPress(optionsParam: Options = {}): Plugin {
   const interactivityMap = {}; // Entries that include interactivity API.
   let externals: ExternalOption; // Resolved externals.
   let rootConfig: ResolvedConfig;
-  let rootPath: string; // Root path to the project.
+  let rootPath: string;
 
   /**
    * The directory of the current file.
